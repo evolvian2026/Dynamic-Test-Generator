@@ -1,0 +1,5333 @@
+{
+  "version": 1,
+  "generatedFrom": "b3782c30-Technical_Questions_Taxonomy_1.xlsx",
+  "generatedAt": "2026-08-25T15:23:06.725Z",
+  "stats": {
+    "subjects": 35,
+    "areas": 293,
+    "areasWithSubAreas": 9,
+    "subAreas": 18,
+    "leafCategories": 302,
+    "tagMentions": 2682,
+    "distinctTags": 2294
+  },
+  "subjects": [
+    {
+      "name": "Operating System",
+      "position": 1,
+      "areas": [
+        {
+          "name": "OS Basics and Architecture",
+          "position": 1,
+          "sourceRow": 2,
+          "subAreas": [],
+          "tags": [
+            "Operating System Types",
+            "OS Structure",
+            "System Calls",
+            "Kernel Modes",
+            "Interrupt Handling",
+            "Boot Process",
+            "OS Services",
+            "Monolithic vs Microkernel"
+          ]
+        },
+        {
+          "name": "Process Management",
+          "position": 2,
+          "sourceRow": 3,
+          "subAreas": [
+            {
+              "name": "Process Concepts and Lifecycle",
+              "position": 1
+            },
+            {
+              "name": "CPU Scheduling Algorithms",
+              "position": 2
+            }
+          ],
+          "tags": [
+            "Process States",
+            "PCB",
+            "Context Switching",
+            "FCFS",
+            "SJF",
+            "SRTF",
+            "Priority Scheduling",
+            "Round Robin",
+            "Multilevel Queue",
+            "Multilevel Feedback Queue",
+            "Dispatcher"
+          ]
+        },
+        {
+          "name": "Threads and Concurrency",
+          "position": 3,
+          "sourceRow": 4,
+          "subAreas": [],
+          "tags": [
+            "User Threads",
+            "Kernel Threads",
+            "Multithreading Models",
+            "Thread Libraries",
+            "Thread Pools",
+            "Implicit Threading"
+          ]
+        },
+        {
+          "name": "Process Synchronization",
+          "position": 4,
+          "sourceRow": 5,
+          "subAreas": [],
+          "tags": [
+            "Critical Section",
+            "Mutex Locks",
+            "Semaphores",
+            "Monitors",
+            "Producer-Consumer",
+            "Readers-Writers",
+            "Dining Philosophers",
+            "Peterson Solution",
+            "Busy Waiting"
+          ]
+        },
+        {
+          "name": "Deadlocks",
+          "position": 5,
+          "sourceRow": 6,
+          "subAreas": [],
+          "tags": [
+            "Deadlock Conditions",
+            "Resource Allocation Graph",
+            "Deadlock Prevention",
+            "Deadlock Avoidance",
+            "Bankers Algorithm",
+            "Deadlock Detection",
+            "Recovery from Deadlock"
+          ]
+        },
+        {
+          "name": "Memory Management",
+          "position": 6,
+          "sourceRow": 7,
+          "subAreas": [
+            {
+              "name": "Address Spaces and Allocation",
+              "position": 1
+            },
+            {
+              "name": "Virtual Memory and Paging",
+              "position": 2
+            }
+          ],
+          "tags": [
+            "Logical vs Physical Address",
+            "Contiguous Allocation",
+            "Fragmentation",
+            "Paging",
+            "Segmentation",
+            "Page Tables",
+            "TLB",
+            "Demand Paging",
+            "Page Replacement (FIFO, LRU, Optimal, LFU)",
+            "Thrashing",
+            "Working Set"
+          ]
+        },
+        {
+          "name": "File Systems",
+          "position": 7,
+          "sourceRow": 8,
+          "subAreas": [],
+          "tags": [
+            "File Concept",
+            "Access Methods",
+            "Directory Structure",
+            "File System Mounting",
+            "Allocation Methods (Contiguous, Linked, Indexed)",
+            "Free Space Management"
+          ]
+        },
+        {
+          "name": "I/O and Disk Management",
+          "position": 8,
+          "sourceRow": 9,
+          "subAreas": [],
+          "tags": [
+            "I/O Hardware",
+            "Device Drivers",
+            "DMA",
+            "Disk Scheduling (FCFS, SSTF, SCAN, C-SCAN, LOOK)",
+            "RAID Levels",
+            "SSD Management"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Computer Networks",
+      "position": 2,
+      "areas": [
+        {
+          "name": "Network Fundamentals",
+          "position": 1,
+          "sourceRow": 10,
+          "subAreas": [],
+          "tags": [
+            "Network Types",
+            "Topologies",
+            "OSI Model",
+            "TCP/IP Model",
+            "Circuit Switching",
+            "Packet Switching",
+            "Network Architecture",
+            "Transmission Modes"
+          ]
+        },
+        {
+          "name": "Physical Layer",
+          "position": 2,
+          "sourceRow": 11,
+          "subAreas": [],
+          "tags": [
+            "Transmission Media",
+            "Bandwidth",
+            "Throughput",
+            "Encoding Techniques",
+            "Multiplexing",
+            "Modulation",
+            "Switching Techniques"
+          ]
+        },
+        {
+          "name": "Data Link Layer",
+          "position": 3,
+          "sourceRow": 12,
+          "subAreas": [],
+          "tags": [
+            "Framing",
+            "Error Detection (CRC, Checksum, Parity)",
+            "Error Correction (Hamming Code)",
+            "Flow Control (Stop-and-Wait, Sliding Window)",
+            "MAC Protocols",
+            "CSMA/CD",
+            "Ethernet",
+            "ARP"
+          ]
+        },
+        {
+          "name": "Network Layer",
+          "position": 4,
+          "sourceRow": 13,
+          "subAreas": [],
+          "tags": [
+            "IPv4",
+            "IPv6",
+            "Classful and Classless Addressing",
+            "Subnetting",
+            "CIDR",
+            "NAT",
+            "DHCP",
+            "ICMP",
+            "Routing Algorithms (OSPF, BGP, RIP, Distance Vector, Link State)"
+          ]
+        },
+        {
+          "name": "Transport Layer",
+          "position": 5,
+          "sourceRow": 14,
+          "subAreas": [],
+          "tags": [
+            "TCP",
+            "UDP",
+            "TCP vs UDP",
+            "Three-Way Handshake",
+            "Flow Control",
+            "Congestion Control (Slow Start, AIMD)",
+            "Reliable Data Transfer",
+            "Socket Programming",
+            "Port Numbers"
+          ]
+        },
+        {
+          "name": "Application Layer",
+          "position": 6,
+          "sourceRow": 15,
+          "subAreas": [],
+          "tags": [
+            "HTTP/HTTPS",
+            "FTP",
+            "SMTP",
+            "DNS",
+            "SNMP",
+            "Client-Server Model",
+            "P2P",
+            "Web Sockets",
+            "REST",
+            "Email Protocols"
+          ]
+        },
+        {
+          "name": "Network Security",
+          "position": 7,
+          "sourceRow": 16,
+          "subAreas": [],
+          "tags": [
+            "Firewalls",
+            "VPN",
+            "SSL/TLS",
+            "Symmetric and Asymmetric Encryption",
+            "Digital Signatures",
+            "Certificates",
+            "IPSec",
+            "Network Attacks",
+            "Intrusion Detection"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Computer Architecture",
+      "position": 3,
+      "areas": [
+        {
+          "name": "Number Systems and Arithmetic",
+          "position": 1,
+          "sourceRow": 17,
+          "subAreas": [],
+          "tags": [
+            "Binary",
+            "Octal",
+            "Hexadecimal",
+            "BCD",
+            "Fixed Point",
+            "Floating Point",
+            "IEEE 754",
+            "Signed Number Representations",
+            "Booths Algorithm",
+            "Carry Look-Ahead Adder"
+          ]
+        },
+        {
+          "name": "Instruction Set Architecture",
+          "position": 2,
+          "sourceRow": 18,
+          "subAreas": [],
+          "tags": [
+            "Instruction Formats",
+            "Addressing Modes (Immediate, Direct, Indirect, Register, Indexed, Relative)",
+            "RISC vs CISC",
+            "Instruction Types"
+          ]
+        },
+        {
+          "name": "ALU and Control Unit",
+          "position": 3,
+          "sourceRow": 19,
+          "subAreas": [],
+          "tags": [
+            "ALU Design",
+            "Control Unit (Hardwired, Microprogrammed)",
+            "Datapath",
+            "Control Signals",
+            "Status Flags",
+            "Microinstructions"
+          ]
+        },
+        {
+          "name": "Pipelining",
+          "position": 4,
+          "sourceRow": 20,
+          "subAreas": [],
+          "tags": [
+            "Pipeline Stages",
+            "Data Hazards",
+            "Control Hazards",
+            "Structural Hazards",
+            "Forwarding",
+            "Stalling",
+            "Branch Prediction",
+            "Pipeline Performance (Speedup, Throughput)"
+          ]
+        },
+        {
+          "name": "Memory Hierarchy",
+          "position": 5,
+          "sourceRow": 21,
+          "subAreas": [],
+          "tags": [
+            "Cache Memory",
+            "Cache Mapping (Direct, Set-Associative, Fully Associative)",
+            "Cache Replacement (LRU, FIFO)",
+            "Write Policies",
+            "Cache Performance (Hit Rate, Miss Penalty)",
+            "Virtual Memory",
+            "TLB"
+          ]
+        },
+        {
+          "name": "Parallel and Multiprocessor Systems",
+          "position": 6,
+          "sourceRow": 22,
+          "subAreas": [],
+          "tags": [
+            "Flynns Taxonomy (SIMD, MIMD)",
+            "Multiprocessor Architecture",
+            "Cache Coherence",
+            "MESI Protocol",
+            "Amdahls Law",
+            "GPU Architecture",
+            "Vector Processing"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "DBMS",
+      "position": 4,
+      "areas": [
+        {
+          "name": "ER Model and Relational Model",
+          "position": 1,
+          "sourceRow": 23,
+          "subAreas": [],
+          "tags": [
+            "ER Diagrams",
+            "Attributes",
+            "Cardinality",
+            "Weak Entities",
+            "ER to Relational Mapping",
+            "Relational Schema",
+            "Relational Algebra",
+            "Tuple Calculus",
+            "Domain Calculus",
+            "Codds Rules"
+          ]
+        },
+        {
+          "name": "Integrity Constraints",
+          "position": 2,
+          "sourceRow": 24,
+          "subAreas": [],
+          "tags": [
+            "Primary Key",
+            "Foreign Key",
+            "Candidate Key",
+            "Super Key",
+            "Referential Integrity",
+            "Domain Constraints",
+            "Check Constraints",
+            "NOT NULL",
+            "UNIQUE"
+          ]
+        },
+        {
+          "name": "Normalization",
+          "position": 3,
+          "sourceRow": 25,
+          "subAreas": [],
+          "tags": [
+            "Functional Dependencies",
+            "1NF",
+            "2NF",
+            "3NF",
+            "BCNF",
+            "4NF",
+            "5NF",
+            "Partial Dependency",
+            "Transitive Dependency",
+            "Multivalued Dependency",
+            "Lossless Join",
+            "Dependency Preservation",
+            "Decomposition"
+          ]
+        },
+        {
+          "name": "Indexing and File Organization",
+          "position": 4,
+          "sourceRow": 26,
+          "subAreas": [],
+          "tags": [
+            "Primary Index",
+            "Secondary Index",
+            "Dense Index",
+            "Sparse Index",
+            "B-Tree",
+            "B+ Tree",
+            "Hash Index",
+            "Bitmap Index",
+            "Clustered vs Non-Clustered",
+            "Heap Files",
+            "Sequential Files"
+          ]
+        },
+        {
+          "name": "Transactions and Concurrency Control",
+          "position": 5,
+          "sourceRow": 27,
+          "subAreas": [
+            {
+              "name": "Transaction Properties and Serializability",
+              "position": 1
+            },
+            {
+              "name": "Concurrency Control Protocols",
+              "position": 2
+            }
+          ],
+          "tags": [
+            "ACID Properties",
+            "Transaction States",
+            "Conflict Serializability",
+            "View Serializability",
+            "Two-Phase Locking",
+            "Timestamp Ordering",
+            "MVCC",
+            "Deadlock Handling (Wait-Die, Wound-Wait)"
+          ]
+        },
+        {
+          "name": "Recovery and Logging",
+          "position": 6,
+          "sourceRow": 28,
+          "subAreas": [],
+          "tags": [
+            "Log-Based Recovery",
+            "Checkpointing",
+            "ARIES Recovery",
+            "Shadow Paging",
+            "Write-Ahead Logging",
+            "Undo/Redo Operations"
+          ]
+        },
+        {
+          "name": "SQL Querying",
+          "position": 7,
+          "sourceRow": 29,
+          "subAreas": [],
+          "tags": [
+            "SELECT",
+            "INSERT",
+            "UPDATE",
+            "DELETE",
+            "WHERE",
+            "GROUP BY",
+            "HAVING",
+            "ORDER BY",
+            "JOINs (INNER, LEFT, RIGHT, FULL, CROSS, Self)",
+            "Subqueries",
+            "Aggregate Functions",
+            "Window Functions",
+            "CTEs",
+            "Views",
+            "Stored Procedures"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Linux",
+      "position": 5,
+      "areas": [
+        {
+          "name": "Linux Fundamentals",
+          "position": 1,
+          "sourceRow": 30,
+          "subAreas": [],
+          "tags": [
+            "Linux Architecture",
+            "Kernel",
+            "Shell Types",
+            "File System Hierarchy",
+            "Basic Commands (ls, cd, cp, mv, rm, mkdir)",
+            "Terminal Navigation",
+            "Linux Distributions",
+            "Linux vs Unix"
+          ]
+        },
+        {
+          "name": "File Permissions and Ownership",
+          "position": 2,
+          "sourceRow": 31,
+          "subAreas": [],
+          "tags": [
+            "chmod",
+            "chown",
+            "chgrp",
+            "File Types",
+            "Symbolic Links",
+            "Hard Links",
+            "umask",
+            "ACLs",
+            "Sticky Bit",
+            "SUID",
+            "SGID"
+          ]
+        },
+        {
+          "name": "User and Group Management",
+          "position": 3,
+          "sourceRow": 32,
+          "subAreas": [],
+          "tags": [
+            "useradd",
+            "usermod",
+            "userdel",
+            "groupadd",
+            "passwd",
+            "sudo Configuration",
+            "/etc/passwd",
+            "/etc/shadow",
+            "su",
+            "User Monitoring"
+          ]
+        },
+        {
+          "name": "Process Management",
+          "position": 4,
+          "sourceRow": 33,
+          "subAreas": [],
+          "tags": [
+            "Process States",
+            "ps",
+            "top",
+            "htop",
+            "kill",
+            "nice",
+            "renice",
+            "Job Control (fg, bg, jobs)",
+            "Daemon Processes",
+            "Signal Handling",
+            "/proc Filesystem"
+          ]
+        },
+        {
+          "name": "System Administration",
+          "position": 5,
+          "sourceRow": 34,
+          "subAreas": [],
+          "tags": [
+            "systemctl",
+            "Service Management",
+            "Boot Process (GRUB, systemd)",
+            "Cron Jobs",
+            "Log Files (/var/log)",
+            "Package Management (apt, yum, dnf)",
+            "Environment Variables",
+            "Disk Management (df, du, mount, fdisk)"
+          ]
+        },
+        {
+          "name": "Shell Scripting",
+          "position": 6,
+          "sourceRow": 35,
+          "subAreas": [],
+          "tags": [
+            "Bash Syntax",
+            "Variables",
+            "Input/Output (echo, read)",
+            "Conditionals (if-else, case)",
+            "Loops (for, while, until)",
+            "Functions",
+            "Command Line Arguments",
+            "Exit Codes",
+            "Piping and Redirection",
+            "Script Debugging"
+          ]
+        },
+        {
+          "name": "Text Processing",
+          "position": 7,
+          "sourceRow": 36,
+          "subAreas": [],
+          "tags": [
+            "grep",
+            "sed",
+            "awk",
+            "cut",
+            "sort",
+            "uniq",
+            "tr",
+            "wc",
+            "Regular Expressions",
+            "Pipe Chaining",
+            "Log File Analysis"
+          ]
+        },
+        {
+          "name": "Networking Commands",
+          "position": 8,
+          "sourceRow": 37,
+          "subAreas": [],
+          "tags": [
+            "ifconfig",
+            "ip",
+            "ping",
+            "netstat",
+            "ss",
+            "curl",
+            "wget",
+            "scp",
+            "ssh",
+            "iptables",
+            "nslookup",
+            "dig",
+            "traceroute"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Software Engineering and Architecture",
+      "position": 6,
+      "areas": [
+        {
+          "name": "SDLC Models",
+          "position": 1,
+          "sourceRow": 38,
+          "subAreas": [],
+          "tags": [
+            "Waterfall",
+            "Agile",
+            "Spiral",
+            "V-Model",
+            "Iterative",
+            "RAD",
+            "Prototyping",
+            "Incremental",
+            "Big Bang Model",
+            "SDLC Phases"
+          ]
+        },
+        {
+          "name": "Requirements Engineering",
+          "position": 2,
+          "sourceRow": 39,
+          "subAreas": [],
+          "tags": [
+            "Elicitation",
+            "Analysis",
+            "Specification",
+            "Validation",
+            "Functional Requirements",
+            "Non-Functional Requirements",
+            "SRS Document",
+            "Use Case Diagrams",
+            "Requirements Traceability"
+          ]
+        },
+        {
+          "name": "Software Design",
+          "position": 3,
+          "sourceRow": 40,
+          "subAreas": [
+            {
+              "name": "Design Principles",
+              "position": 1
+            },
+            {
+              "name": "UML and Modeling",
+              "position": 2
+            }
+          ],
+          "tags": [
+            "SOLID Principles",
+            "Coupling and Cohesion",
+            "Modular Design",
+            "Object-Oriented Design",
+            "UML (Class, Sequence, Activity, State, Component Diagrams)",
+            "Design Documentation"
+          ]
+        },
+        {
+          "name": "Design Patterns",
+          "position": 4,
+          "sourceRow": 41,
+          "subAreas": [],
+          "tags": [
+            "Creational (Singleton, Factory, Builder, Prototype)",
+            "Structural (Adapter, Decorator, Facade, Proxy)",
+            "Behavioral (Observer, Strategy, Command, State, Template Method, Iterator)"
+          ]
+        },
+        {
+          "name": "Architectural Patterns",
+          "position": 5,
+          "sourceRow": 42,
+          "subAreas": [],
+          "tags": [
+            "Layered",
+            "Client-Server",
+            "MVC",
+            "MVP",
+            "MVVM",
+            "Microservices",
+            "Event-Driven",
+            "Pipe-and-Filter",
+            "Hexagonal",
+            "SOA",
+            "Monolithic",
+            "Serverless"
+          ]
+        },
+        {
+          "name": "Software Testing",
+          "position": 6,
+          "sourceRow": 43,
+          "subAreas": [],
+          "tags": [
+            "Unit Testing",
+            "Integration Testing",
+            "System Testing",
+            "Acceptance Testing",
+            "Black Box",
+            "White Box",
+            "Regression",
+            "Test Case Design",
+            "Boundary Value Analysis",
+            "Equivalence Partitioning",
+            "Code Coverage"
+          ]
+        },
+        {
+          "name": "Project Management",
+          "position": 7,
+          "sourceRow": 44,
+          "subAreas": [],
+          "tags": [
+            "Estimation (COCOMO, Function Points)",
+            "Scheduling (Gantt, PERT, CPM)",
+            "Risk Management",
+            "Configuration Management",
+            "Quality Assurance",
+            "Software Metrics"
+          ]
+        },
+        {
+          "name": "Software Maintenance",
+          "position": 8,
+          "sourceRow": 45,
+          "subAreas": [],
+          "tags": [
+            "Corrective",
+            "Adaptive",
+            "Perfective",
+            "Preventive Maintenance",
+            "Refactoring",
+            "Technical Debt",
+            "Legacy Systems",
+            "Reverse Engineering",
+            "Re-engineering"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "System Design",
+      "position": 7,
+      "areas": [
+        {
+          "name": "Fundamentals",
+          "position": 1,
+          "sourceRow": 46,
+          "subAreas": [],
+          "tags": [
+            "Scalability (Horizontal, Vertical)",
+            "Latency vs Throughput",
+            "Availability",
+            "Reliability",
+            "CAP Theorem",
+            "Consistency Models",
+            "Trade-off Analysis",
+            "Back-of-the-Envelope Estimation"
+          ]
+        },
+        {
+          "name": "Databases and Storage",
+          "position": 2,
+          "sourceRow": 47,
+          "subAreas": [],
+          "tags": [
+            "SQL vs NoSQL",
+            "Database Sharding",
+            "Replication",
+            "Partitioning",
+            "ACID vs BASE",
+            "Database Federation",
+            "Blob Storage",
+            "Data Lakes",
+            "Time-Series Databases"
+          ]
+        },
+        {
+          "name": "Caching",
+          "position": 3,
+          "sourceRow": 48,
+          "subAreas": [],
+          "tags": [
+            "Cache Strategies (Cache-Aside, Write-Through, Write-Back, Write-Around)",
+            "Redis",
+            "Memcached",
+            "CDN",
+            "Cache Invalidation",
+            "Eviction Policies",
+            "Distributed Caching"
+          ]
+        },
+        {
+          "name": "Load Balancing and Networking",
+          "position": 4,
+          "sourceRow": 49,
+          "subAreas": [],
+          "tags": [
+            "Load Balancer Types (L4, L7)",
+            "Algorithms (Round Robin, Least Connections, Weighted)",
+            "Reverse Proxy",
+            "API Gateway",
+            "DNS Load Balancing",
+            "Auto-scaling"
+          ]
+        },
+        {
+          "name": "Message Queues and Streaming",
+          "position": 5,
+          "sourceRow": 50,
+          "subAreas": [],
+          "tags": [
+            "Asynchronous Communication",
+            "Kafka",
+            "RabbitMQ",
+            "Pub-Sub",
+            "Message Delivery Guarantees (At-Least-Once, At-Most-Once, Exactly-Once)",
+            "Event Sourcing",
+            "CQRS"
+          ]
+        },
+        {
+          "name": "Distributed Systems",
+          "position": 6,
+          "sourceRow": 51,
+          "subAreas": [],
+          "tags": [
+            "Consensus (Raft, Paxos)",
+            "Distributed Transactions",
+            "Leader Election",
+            "Consistent Hashing",
+            "Bloom Filters",
+            "Gossip Protocol",
+            "Vector Clocks"
+          ]
+        },
+        {
+          "name": "API Design",
+          "position": 7,
+          "sourceRow": 52,
+          "subAreas": [],
+          "tags": [
+            "REST",
+            "GraphQL",
+            "gRPC",
+            "WebSocket",
+            "API Versioning",
+            "Rate Limiting",
+            "Pagination",
+            "Idempotency",
+            "OpenAPI/Swagger",
+            "API Authentication"
+          ]
+        },
+        {
+          "name": "Security and Reliability",
+          "position": 8,
+          "sourceRow": 53,
+          "subAreas": [],
+          "tags": [
+            "Authentication (OAuth, JWT, SSO)",
+            "Authorization (RBAC, ABAC)",
+            "Circuit Breaker",
+            "Retry Patterns",
+            "Disaster Recovery",
+            "Health Checks",
+            "Monitoring"
+          ]
+        },
+        {
+          "name": "Case Studies",
+          "position": 9,
+          "sourceRow": 54,
+          "subAreas": [],
+          "tags": [
+            "URL Shortener",
+            "Chat System",
+            "Notification System",
+            "Video Streaming",
+            "Social Media Feed",
+            "Rate Limiter",
+            "Search Engine",
+            "Payment System",
+            "File Storage",
+            "E-Commerce"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "DevOps",
+      "position": 8,
+      "areas": [
+        {
+          "name": "DevOps Fundamentals and Culture",
+          "position": 1,
+          "sourceRow": 55,
+          "subAreas": [],
+          "tags": [
+            "DevOps Principles",
+            "SDLC Integration",
+            "CI/CD Concepts",
+            "DevOps vs Agile",
+            "Shift-Left",
+            "Infrastructure as Code",
+            "DevSecOps",
+            "SRE Practices"
+          ]
+        },
+        {
+          "name": "Version Control (Git)",
+          "position": 2,
+          "sourceRow": 56,
+          "subAreas": [],
+          "tags": [
+            "Git Basics",
+            "Branching Strategies (GitFlow, Trunk-Based)",
+            "Merge vs Rebase",
+            "Pull Requests",
+            "Code Reviews",
+            "Git Hooks",
+            "Tagging",
+            "Monorepo vs Multirepo",
+            "GitHub/GitLab"
+          ]
+        },
+        {
+          "name": "CI/CD Pipelines",
+          "position": 3,
+          "sourceRow": 57,
+          "subAreas": [],
+          "tags": [
+            "Jenkins",
+            "GitHub Actions",
+            "GitLab CI",
+            "Build Automation",
+            "Automated Testing",
+            "Artifact Management",
+            "Pipeline-as-Code",
+            "Deployment Strategies (Blue-Green, Canary, Rolling)"
+          ]
+        },
+        {
+          "name": "Containerization (Docker)",
+          "position": 4,
+          "sourceRow": 58,
+          "subAreas": [],
+          "tags": [
+            "Docker Images",
+            "Containers",
+            "Dockerfile",
+            "Docker Compose",
+            "Docker Volumes",
+            "Docker Networking",
+            "Multi-Stage Builds",
+            "Container Registry",
+            "Image Optimization"
+          ]
+        },
+        {
+          "name": "Orchestration (Kubernetes)",
+          "position": 5,
+          "sourceRow": 59,
+          "subAreas": [],
+          "tags": [
+            "Pods",
+            "Deployments",
+            "Services",
+            "ConfigMaps",
+            "Secrets",
+            "Namespaces",
+            "Ingress",
+            "Helm Charts",
+            "StatefulSets",
+            "DaemonSets",
+            "Horizontal Pod Autoscaler",
+            "RBAC",
+            "In-Place Pod Resizing",
+            "Sidecar Containers"
+          ]
+        },
+        {
+          "name": "Infrastructure as Code",
+          "position": 6,
+          "sourceRow": 60,
+          "subAreas": [],
+          "tags": [
+            "Terraform",
+            "Ansible",
+            "CloudFormation",
+            "Pulumi",
+            "Configuration Management",
+            "Infrastructure Provisioning",
+            "State Management",
+            "Modules",
+            "Idempotency"
+          ]
+        },
+        {
+          "name": "Monitoring and Observability",
+          "position": 7,
+          "sourceRow": 61,
+          "subAreas": [],
+          "tags": [
+            "Prometheus",
+            "Grafana",
+            "ELK Stack",
+            "Distributed Tracing (Jaeger, OpenTelemetry)",
+            "Log Aggregation",
+            "Alerting",
+            "SLOs/SLIs/SLAs",
+            "Application Performance Monitoring"
+          ]
+        },
+        {
+          "name": "Agile and Scrum",
+          "position": 8,
+          "sourceRow": 62,
+          "subAreas": [],
+          "tags": [
+            "Agile Manifesto",
+            "Scrum Framework",
+            "Sprint Planning",
+            "Daily Standup",
+            "Retrospective",
+            "Kanban",
+            "User Stories",
+            "Story Points",
+            "Velocity",
+            "Burndown Charts"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Programming",
+      "position": 9,
+      "areas": [
+        {
+          "name": "Programming Basics",
+          "position": 1,
+          "sourceRow": 63,
+          "subAreas": [],
+          "tags": [
+            "Variables",
+            "Data Types",
+            "Operators",
+            "Expressions",
+            "Type Casting",
+            "Input/Output",
+            "Program Structure",
+            "Compilation vs Interpretation"
+          ]
+        },
+        {
+          "name": "Control Flow",
+          "position": 2,
+          "sourceRow": 64,
+          "subAreas": [],
+          "tags": [
+            "if-else",
+            "switch-case",
+            "for Loop",
+            "while Loop",
+            "do-while",
+            "Nested Loops",
+            "break",
+            "continue",
+            "Ternary Operator"
+          ]
+        },
+        {
+          "name": "Functions",
+          "position": 3,
+          "sourceRow": 65,
+          "subAreas": [],
+          "tags": [
+            "Function Definition",
+            "Parameters",
+            "Return Values",
+            "Pass by Value vs Reference",
+            "Scope",
+            "Recursion",
+            "Function Overloading",
+            "Lambda/Anonymous Functions"
+          ]
+        },
+        {
+          "name": "Arrays and Strings",
+          "position": 4,
+          "sourceRow": 66,
+          "subAreas": [],
+          "tags": [
+            "Array Declaration",
+            "Indexing",
+            "Multi-dimensional Arrays",
+            "String Operations",
+            "String Manipulation",
+            "Character Arrays",
+            "Dynamic Arrays"
+          ]
+        },
+        {
+          "name": "Object-Oriented Programming",
+          "position": 5,
+          "sourceRow": 67,
+          "subAreas": [
+            {
+              "name": "OOP Fundamentals",
+              "position": 1
+            },
+            {
+              "name": "Advanced OOP",
+              "position": 2
+            }
+          ],
+          "tags": [
+            "Classes",
+            "Objects",
+            "Encapsulation",
+            "Inheritance",
+            "Polymorphism",
+            "Abstraction",
+            "Constructors",
+            "Access Modifiers",
+            "Method Overriding",
+            "Interfaces",
+            "Abstract Classes",
+            "Composition vs Inheritance"
+          ]
+        },
+        {
+          "name": "Error Handling",
+          "position": 6,
+          "sourceRow": 68,
+          "subAreas": [],
+          "tags": [
+            "Exception Types",
+            "Try-Catch",
+            "Throw/Throws",
+            "Custom Exceptions",
+            "Finally Block",
+            "Error vs Exception",
+            "Debugging Techniques"
+          ]
+        },
+        {
+          "name": "File Handling",
+          "position": 7,
+          "sourceRow": 69,
+          "subAreas": [],
+          "tags": [
+            "File Operations (Open, Read, Write, Close)",
+            "File Modes",
+            "Stream I/O",
+            "Buffered I/O",
+            "Serialization",
+            "Binary vs Text Files"
+          ]
+        },
+        {
+          "name": "Pseudocode and Problem Solving",
+          "position": 8,
+          "sourceRow": 70,
+          "subAreas": [],
+          "tags": [
+            "Algorithm Design",
+            "Flowcharts",
+            "Pseudocode Syntax",
+            "Problem Decomposition",
+            "Step-by-Step Logic",
+            "Dry Run",
+            "Tracing"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "C Programming",
+      "position": 10,
+      "areas": [
+        {
+          "name": "C Fundamentals",
+          "position": 1,
+          "sourceRow": 71,
+          "subAreas": [],
+          "tags": [
+            "History",
+            "Features",
+            "Character Set",
+            "Keywords",
+            "Identifiers",
+            "Data Types",
+            "Variables",
+            "Constants",
+            "Program Structure",
+            "Compilation Process",
+            "Header Files"
+          ]
+        },
+        {
+          "name": "Operators and Control Flow",
+          "position": 2,
+          "sourceRow": 72,
+          "subAreas": [],
+          "tags": [
+            "Arithmetic",
+            "Relational",
+            "Logical",
+            "Bitwise",
+            "Assignment",
+            "Ternary Operators",
+            "if-else",
+            "switch-case",
+            "for",
+            "while",
+            "do-while",
+            "Nested Loops",
+            "break",
+            "continue",
+            "goto"
+          ]
+        },
+        {
+          "name": "Arrays and Strings",
+          "position": 3,
+          "sourceRow": 73,
+          "subAreas": [],
+          "tags": [
+            "1D Arrays",
+            "2D Arrays",
+            "Multi-dimensional Arrays",
+            "String Functions (strlen, strcpy, strcmp, strcat)",
+            "Character Arrays",
+            "String Processing"
+          ]
+        },
+        {
+          "name": "Functions and Recursion",
+          "position": 4,
+          "sourceRow": 74,
+          "subAreas": [],
+          "tags": [
+            "Function Declaration",
+            "Definition",
+            "Call by Value",
+            "Call by Reference",
+            "Built-in Functions",
+            "Recursion",
+            "Storage Classes (auto, static, extern, register)"
+          ]
+        },
+        {
+          "name": "Pointers and Memory",
+          "position": 5,
+          "sourceRow": 75,
+          "subAreas": [],
+          "tags": [
+            "Pointer Basics",
+            "Pointer Arithmetic",
+            "Pointer to Pointer",
+            "Array of Pointers",
+            "Function Pointers",
+            "Dynamic Memory (malloc, calloc, realloc, free)",
+            "Memory Leaks",
+            "Dangling Pointers"
+          ]
+        },
+        {
+          "name": "Structures and Unions",
+          "position": 6,
+          "sourceRow": 76,
+          "subAreas": [],
+          "tags": [
+            "Structure Declaration",
+            "Nested Structures",
+            "Array of Structures",
+            "Pointer to Structure",
+            "Union",
+            "typedef",
+            "Bit Fields",
+            "Self-Referential Structures"
+          ]
+        },
+        {
+          "name": "File Handling",
+          "position": 7,
+          "sourceRow": 77,
+          "subAreas": [],
+          "tags": [
+            "fopen",
+            "fclose",
+            "fread",
+            "fwrite",
+            "fprintf",
+            "fscanf",
+            "fgets",
+            "fputs",
+            "File Modes",
+            "File Positioning (fseek, ftell, rewind)",
+            "Binary Files",
+            "Error Handling"
+          ]
+        },
+        {
+          "name": "Preprocessor and Advanced Topics",
+          "position": 8,
+          "sourceRow": 78,
+          "subAreas": [],
+          "tags": [
+            "Macros (#define)",
+            "Conditional Compilation (#ifdef, #ifndef)",
+            "File Inclusion",
+            "Header Guards",
+            "Command Line Arguments (argc, argv)",
+            "Enumerations",
+            "Volatile Keyword"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "C++ Programming",
+      "position": 11,
+      "areas": [
+        {
+          "name": "C++ Fundamentals",
+          "position": 1,
+          "sourceRow": 79,
+          "subAreas": [],
+          "tags": [
+            "Namespaces",
+            "cin/cout",
+            "Data Types",
+            "auto Keyword",
+            "Type Inference",
+            "References",
+            "Inline Functions",
+            "Default Arguments",
+            "Program Structure",
+            "Headers"
+          ]
+        },
+        {
+          "name": "Control Flow and Functions",
+          "position": 2,
+          "sourceRow": 80,
+          "subAreas": [],
+          "tags": [
+            "if-else",
+            "switch",
+            "Loops",
+            "break/continue",
+            "Function Overloading",
+            "Default Arguments",
+            "Inline Functions",
+            "Recursion",
+            "Friend Functions",
+            "Static Members"
+          ]
+        },
+        {
+          "name": "Arrays and Strings",
+          "position": 3,
+          "sourceRow": 81,
+          "subAreas": [],
+          "tags": [
+            "C-Style Arrays",
+            "std::string",
+            "String Methods",
+            "Character Arrays",
+            "Multi-dimensional Arrays",
+            "string vs char[]",
+            "String Streams"
+          ]
+        },
+        {
+          "name": "OOP in C++",
+          "position": 4,
+          "sourceRow": 82,
+          "subAreas": [
+            {
+              "name": "Classes and Objects",
+              "position": 1
+            },
+            {
+              "name": "Inheritance and Polymorphism",
+              "position": 2
+            }
+          ],
+          "tags": [
+            "Constructors",
+            "Destructors",
+            "Access Specifiers",
+            "Encapsulation",
+            "Single/Multiple/Multilevel Inheritance",
+            "Virtual Functions",
+            "Pure Virtual",
+            "Abstract Classes",
+            "Operator Overloading",
+            "this Pointer"
+          ]
+        },
+        {
+          "name": "Pointers and Memory Management",
+          "position": 5,
+          "sourceRow": 83,
+          "subAreas": [],
+          "tags": [
+            "Pointers",
+            "References",
+            "new/delete",
+            "Dynamic Arrays",
+            "Smart Pointers (unique_ptr, shared_ptr, weak_ptr)",
+            "RAII",
+            "Memory Leaks",
+            "Dangling Pointers"
+          ]
+        },
+        {
+          "name": "Templates and Generics",
+          "position": 6,
+          "sourceRow": 84,
+          "subAreas": [],
+          "tags": [
+            "Function Templates",
+            "Class Templates",
+            "Template Specialization",
+            "Template Parameters",
+            "Variadic Templates",
+            "Generic Programming"
+          ]
+        },
+        {
+          "name": "STL (Standard Template Library)",
+          "position": 7,
+          "sourceRow": 85,
+          "subAreas": [],
+          "tags": [
+            "Vectors",
+            "Lists",
+            "Deque",
+            "Set",
+            "Map",
+            "Unordered_Map",
+            "Stack",
+            "Queue",
+            "Priority Queue",
+            "Iterators",
+            "Algorithms (sort, find, binary_search, transform)",
+            "Functors"
+          ]
+        },
+        {
+          "name": "Exception Handling",
+          "position": 8,
+          "sourceRow": 86,
+          "subAreas": [],
+          "tags": [
+            "try-catch",
+            "throw",
+            "Standard Exceptions",
+            "Custom Exceptions",
+            "Exception Specification",
+            "Stack Unwinding",
+            "noexcept"
+          ]
+        },
+        {
+          "name": "File Handling and Streams",
+          "position": 9,
+          "sourceRow": 87,
+          "subAreas": [],
+          "tags": [
+            "ifstream",
+            "ofstream",
+            "fstream",
+            "File Modes",
+            "File Positioning",
+            "Binary Files",
+            "String Streams (stringstream)",
+            "Error Handling"
+          ]
+        },
+        {
+          "name": "Modern C++ Features",
+          "position": 10,
+          "sourceRow": 88,
+          "subAreas": [],
+          "tags": [
+            "C++11/14/17/20",
+            "Lambda Expressions",
+            "Move Semantics",
+            "Range-based for",
+            "constexpr",
+            "std::optional",
+            "std::variant",
+            "Structured Bindings",
+            "Concepts",
+            "Modules"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Java Programming",
+      "position": 12,
+      "areas": [
+        {
+          "name": "Java Fundamentals",
+          "position": 1,
+          "sourceRow": 89,
+          "subAreas": [],
+          "tags": [
+            "JDK",
+            "JRE",
+            "JVM",
+            "JIT",
+            "Bytecode",
+            "Platform Independence",
+            "Data Types",
+            "Variables",
+            "Operators",
+            "Type Casting",
+            "Naming Conventions"
+          ]
+        },
+        {
+          "name": "Control Flow",
+          "position": 2,
+          "sourceRow": 90,
+          "subAreas": [],
+          "tags": [
+            "if-else",
+            "switch (including Pattern Matching)",
+            "for",
+            "while",
+            "do-while",
+            "Enhanced for",
+            "break",
+            "continue",
+            "Labeled Loops"
+          ]
+        },
+        {
+          "name": "OOP in Java",
+          "position": 3,
+          "sourceRow": 91,
+          "subAreas": [],
+          "tags": [
+            "Classes",
+            "Objects",
+            "Constructors",
+            "this/super",
+            "Inheritance",
+            "Polymorphism",
+            "Abstraction",
+            "Interfaces",
+            "Abstract Classes",
+            "Access Modifiers",
+            "final Keyword",
+            "Method Overloading/Overriding"
+          ]
+        },
+        {
+          "name": "Arrays and Strings",
+          "position": 4,
+          "sourceRow": 92,
+          "subAreas": [],
+          "tags": [
+            "Array Declaration",
+            "Multi-dimensional Arrays",
+            "String Class",
+            "StringBuilder",
+            "StringBuffer",
+            "String Pool",
+            "String Immutability",
+            "String Methods",
+            "Arrays Utility Class"
+          ]
+        },
+        {
+          "name": "Exception Handling",
+          "position": 5,
+          "sourceRow": 93,
+          "subAreas": [],
+          "tags": [
+            "Exception Hierarchy",
+            "Checked vs Unchecked",
+            "try-catch-finally",
+            "throw/throws",
+            "Custom Exceptions",
+            "try-with-resources",
+            "Multi-catch"
+          ]
+        },
+        {
+          "name": "Collections Framework",
+          "position": 6,
+          "sourceRow": 94,
+          "subAreas": [],
+          "tags": [
+            "List (ArrayList, LinkedList)",
+            "Set (HashSet, TreeSet)",
+            "Map (HashMap, TreeMap, LinkedHashMap)",
+            "Queue",
+            "Iterator",
+            "Comparable",
+            "Comparator",
+            "Generics",
+            "Collections Utility Class"
+          ]
+        },
+        {
+          "name": "Multithreading",
+          "position": 7,
+          "sourceRow": 95,
+          "subAreas": [],
+          "tags": [
+            "Thread Class",
+            "Runnable Interface",
+            "Thread Lifecycle",
+            "Synchronization",
+            "Deadlock",
+            "wait/notify",
+            "Thread Pool",
+            "Executor Framework",
+            "Callable",
+            "Future",
+            "CompletableFuture"
+          ]
+        },
+        {
+          "name": "File I/O and Serialization",
+          "position": 8,
+          "sourceRow": 96,
+          "subAreas": [],
+          "tags": [
+            "FileReader",
+            "FileWriter",
+            "BufferedReader",
+            "BufferedWriter",
+            "Streams (InputStream, OutputStream)",
+            "Serialization",
+            "Deserialization",
+            "NIO (Path, Files)",
+            "try-with-resources"
+          ]
+        },
+        {
+          "name": "Java 8+ Features",
+          "position": 9,
+          "sourceRow": 97,
+          "subAreas": [],
+          "tags": [
+            "Lambda Expressions",
+            "Functional Interfaces",
+            "Stream API",
+            "Optional",
+            "Method References",
+            "Default Methods",
+            "Date/Time API",
+            "Records",
+            "Sealed Classes",
+            "Pattern Matching"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Python Programming",
+      "position": 13,
+      "areas": [
+        {
+          "name": "Python Fundamentals",
+          "position": 1,
+          "sourceRow": 98,
+          "subAreas": [],
+          "tags": [
+            "Syntax",
+            "Indentation",
+            "Variables",
+            "Data Types (int, float, str, bool, complex)",
+            "Type Conversion",
+            "Input/Output",
+            "Comments",
+            "Keywords",
+            "Dynamic Typing"
+          ]
+        },
+        {
+          "name": "Operators and Control Flow",
+          "position": 2,
+          "sourceRow": 99,
+          "subAreas": [],
+          "tags": [
+            "Arithmetic",
+            "Comparison",
+            "Logical",
+            "Bitwise",
+            "Identity (is)",
+            "Membership (in)",
+            "if-elif-else",
+            "for",
+            "while",
+            "break",
+            "continue",
+            "pass",
+            "range",
+            "Comprehensions"
+          ]
+        },
+        {
+          "name": "Data Structures",
+          "position": 3,
+          "sourceRow": 100,
+          "subAreas": [],
+          "tags": [
+            "Lists",
+            "Tuples",
+            "Dictionaries",
+            "Sets",
+            "Strings",
+            "Slicing",
+            "List Comprehensions",
+            "Dict Comprehensions",
+            "Nested Data Structures",
+            "Unpacking"
+          ]
+        },
+        {
+          "name": "Functions and Modules",
+          "position": 4,
+          "sourceRow": 101,
+          "subAreas": [],
+          "tags": [
+            "def",
+            "Parameters (Positional, Keyword, Default, *args, **kwargs)",
+            "Return",
+            "Lambda",
+            "Scope (LEGB)",
+            "Closures",
+            "Decorators",
+            "Modules",
+            "Packages",
+            "import",
+            "pip"
+          ]
+        },
+        {
+          "name": "OOP in Python",
+          "position": 5,
+          "sourceRow": 102,
+          "subAreas": [],
+          "tags": [
+            "Classes",
+            "Objects",
+            "__init__",
+            "self",
+            "Inheritance (Single, Multiple)",
+            "Polymorphism",
+            "Encapsulation",
+            "Dunder Methods",
+            "Property Decorators",
+            "Abstract Classes (ABC)",
+            "Class vs Static Methods"
+          ]
+        },
+        {
+          "name": "File Handling and Exceptions",
+          "position": 6,
+          "sourceRow": 103,
+          "subAreas": [],
+          "tags": [
+            "open",
+            "read",
+            "write",
+            "close",
+            "Context Manager (with)",
+            "File Modes",
+            "CSV/JSON Handling",
+            "try-except-finally",
+            "raise",
+            "Custom Exceptions"
+          ]
+        },
+        {
+          "name": "Advanced Python",
+          "position": 7,
+          "sourceRow": 104,
+          "subAreas": [],
+          "tags": [
+            "Generators",
+            "Iterators",
+            "Decorators",
+            "Context Managers",
+            "Regular Expressions",
+            "Collections Module",
+            "itertools",
+            "functools",
+            "Type Hints",
+            "Async/Await",
+            "Virtual Environments"
+          ]
+        },
+        {
+          "name": "Python Libraries Overview",
+          "position": 8,
+          "sourceRow": 105,
+          "subAreas": [],
+          "tags": [
+            "NumPy",
+            "Pandas",
+            "Matplotlib",
+            "Requests",
+            "datetime",
+            "os",
+            "sys",
+            "json",
+            "re",
+            "logging",
+            "unittest",
+            "pytest"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "GO Programming",
+      "position": 14,
+      "areas": [
+        {
+          "name": "Go Fundamentals",
+          "position": 1,
+          "sourceRow": 106,
+          "subAreas": [],
+          "tags": [
+            "Go Installation",
+            "GOPATH",
+            "Go Modules",
+            "Data Types",
+            "Variables",
+            "Constants",
+            "Operators",
+            "fmt Package",
+            "Compilation",
+            "Cross-Platform"
+          ]
+        },
+        {
+          "name": "Control Flow and Functions",
+          "position": 2,
+          "sourceRow": 107,
+          "subAreas": [],
+          "tags": [
+            "if-else",
+            "switch",
+            "for (range)",
+            "break",
+            "continue",
+            "Functions",
+            "Multiple Return Values",
+            "Named Returns",
+            "Variadic Functions",
+            "Defer",
+            "Anonymous Functions",
+            "Closures"
+          ]
+        },
+        {
+          "name": "Data Structures and Types",
+          "position": 3,
+          "sourceRow": 108,
+          "subAreas": [],
+          "tags": [
+            "Arrays",
+            "Slices",
+            "Maps",
+            "Structs",
+            "Pointers",
+            "Interfaces",
+            "Type Assertions",
+            "Type Switching",
+            "Embedding",
+            "Methods",
+            "Receivers (Value vs Pointer)"
+          ]
+        },
+        {
+          "name": "Concurrency",
+          "position": 4,
+          "sourceRow": 109,
+          "subAreas": [],
+          "tags": [
+            "Goroutines",
+            "Channels (Buffered, Unbuffered)",
+            "Select Statement",
+            "WaitGroups",
+            "Mutexes",
+            "Race Conditions",
+            "Context Package",
+            "sync Package"
+          ]
+        },
+        {
+          "name": "Error Handling and Testing",
+          "position": 5,
+          "sourceRow": 110,
+          "subAreas": [],
+          "tags": [
+            "Error Interface",
+            "Custom Errors",
+            "errors.New",
+            "fmt.Errorf",
+            "Panic/Recover",
+            "Unit Testing",
+            "Table-Driven Tests",
+            "Benchmarking",
+            "Test Coverage"
+          ]
+        },
+        {
+          "name": "Packages and Modules",
+          "position": 6,
+          "sourceRow": 111,
+          "subAreas": [],
+          "tags": [
+            "Package Organization",
+            "Import Paths",
+            "Module Management (go.mod)",
+            "Visibility Rules",
+            "init Function",
+            "Standard Library",
+            "Third-Party Packages"
+          ]
+        },
+        {
+          "name": "Advanced Go",
+          "position": 7,
+          "sourceRow": 112,
+          "subAreas": [],
+          "tags": [
+            "Reflection",
+            "JSON Marshaling/Unmarshaling",
+            "File I/O",
+            "HTTP Server/Client",
+            "REST APIs",
+            "Database Connectivity",
+            "Middleware",
+            "Performance Optimization"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Rust Programming",
+      "position": 15,
+      "areas": [
+        {
+          "name": "Rust Fundamentals",
+          "position": 1,
+          "sourceRow": 113,
+          "subAreas": [],
+          "tags": [
+            "Installation",
+            "Cargo",
+            "Variables",
+            "Mutability",
+            "Data Types (Scalar, Compound)",
+            "Constants",
+            "Shadowing",
+            "Functions",
+            "Expressions vs Statements"
+          ]
+        },
+        {
+          "name": "Ownership and Borrowing",
+          "position": 2,
+          "sourceRow": 114,
+          "subAreas": [],
+          "tags": [
+            "Ownership Rules",
+            "Move Semantics",
+            "Stack vs Heap",
+            "References",
+            "Mutable/Immutable Borrows",
+            "Lifetimes",
+            "Dangling References",
+            "Slice Types",
+            "Copy/Clone Traits"
+          ]
+        },
+        {
+          "name": "Control Flow and Pattern Matching",
+          "position": 3,
+          "sourceRow": 115,
+          "subAreas": [],
+          "tags": [
+            "if/else",
+            "loop",
+            "while",
+            "for",
+            "match",
+            "if let",
+            "while let",
+            "Pattern Matching",
+            "Destructuring",
+            "Guards"
+          ]
+        },
+        {
+          "name": "Structs Enums and Traits",
+          "position": 4,
+          "sourceRow": 116,
+          "subAreas": [],
+          "tags": [
+            "Struct Definition",
+            "Methods",
+            "Associated Functions",
+            "Enums",
+            "Option",
+            "Result",
+            "Trait Definition",
+            "Generics",
+            "Trait Bounds",
+            "Trait Objects",
+            "Dynamic Dispatch",
+            "Derive Macros"
+          ]
+        },
+        {
+          "name": "Error Handling",
+          "position": 5,
+          "sourceRow": 117,
+          "subAreas": [],
+          "tags": [
+            "Result Type",
+            "Option Type",
+            "panic!",
+            "unwrap",
+            "expect",
+            "? Operator",
+            "Custom Errors",
+            "Error Propagation",
+            "thiserror",
+            "anyhow"
+          ]
+        },
+        {
+          "name": "Collections and Iterators",
+          "position": 6,
+          "sourceRow": 118,
+          "subAreas": [],
+          "tags": [
+            "Vec",
+            "HashMap",
+            "BTreeMap",
+            "String",
+            "Iterator Trait",
+            "map",
+            "filter",
+            "fold",
+            "collect",
+            "Lazy Evaluation",
+            "Iterator Adapters"
+          ]
+        },
+        {
+          "name": "Concurrency",
+          "position": 7,
+          "sourceRow": 119,
+          "subAreas": [],
+          "tags": [
+            "Threads",
+            "Send/Sync Traits",
+            "Mutex",
+            "Arc",
+            "Channels (mpsc)",
+            "Async/Await",
+            "Futures",
+            "Tokio Runtime",
+            "Fearless Concurrency"
+          ]
+        },
+        {
+          "name": "Modules and Crates",
+          "position": 8,
+          "sourceRow": 120,
+          "subAreas": [],
+          "tags": [
+            "mod",
+            "pub",
+            "use",
+            "Crate Structure",
+            "Workspace",
+            "Cargo.toml",
+            "Publishing Crates",
+            "Conditional Compilation",
+            "Feature Flags"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Data Structures and Algorithms",
+      "position": 16,
+      "areas": [
+        {
+          "name": "Complexity Analysis",
+          "position": 1,
+          "sourceRow": 121,
+          "subAreas": [],
+          "tags": [
+            "Time Complexity",
+            "Space Complexity",
+            "Big O",
+            "Big Omega",
+            "Big Theta",
+            "Best/Worst/Average Case",
+            "Amortized Analysis",
+            "Recurrence Relations",
+            "Masters Theorem"
+          ]
+        },
+        {
+          "name": "Arrays and Matrices",
+          "position": 2,
+          "sourceRow": 122,
+          "subAreas": [],
+          "tags": [
+            "Array Operations",
+            "Searching",
+            "Rotation",
+            "Subarray Problems",
+            "Two Pointers",
+            "Sliding Window",
+            "Matrix Operations",
+            "Spiral Traversal",
+            "Kadanes Algorithm"
+          ]
+        },
+        {
+          "name": "Linked Lists",
+          "position": 3,
+          "sourceRow": 123,
+          "subAreas": [],
+          "tags": [
+            "Singly",
+            "Doubly",
+            "Circular Linked List",
+            "Insertion",
+            "Deletion",
+            "Reversal",
+            "Cycle Detection (Floyd)",
+            "Merge",
+            "Intersection",
+            "LRU Cache Implementation"
+          ]
+        },
+        {
+          "name": "Stacks and Queues",
+          "position": 4,
+          "sourceRow": 124,
+          "subAreas": [],
+          "tags": [
+            "Stack (Push/Pop)",
+            "Queue (Enqueue/Dequeue)",
+            "LIFO",
+            "FIFO",
+            "Circular Queue",
+            "Priority Queue",
+            "Deque",
+            "Monotonic Stack",
+            "Expression Evaluation",
+            "Next Greater Element"
+          ]
+        },
+        {
+          "name": "Trees",
+          "position": 5,
+          "sourceRow": 125,
+          "subAreas": [
+            {
+              "name": "Binary Trees and BST",
+              "position": 1
+            },
+            {
+              "name": "Balanced Trees and Heaps",
+              "position": 2
+            }
+          ],
+          "tags": [
+            "Tree Traversals (Inorder, Preorder, Postorder, Level Order)",
+            "BST Operations",
+            "AVL Trees",
+            "Red-Black Trees",
+            "Segment Trees",
+            "Binary Heap",
+            "Trie",
+            "Fenwick Tree",
+            "Lowest Common Ancestor"
+          ]
+        },
+        {
+          "name": "Graphs",
+          "position": 6,
+          "sourceRow": 126,
+          "subAreas": [
+            {
+              "name": "Graph Fundamentals",
+              "position": 1
+            },
+            {
+              "name": "Graph Algorithms",
+              "position": 2
+            }
+          ],
+          "tags": [
+            "Adjacency Matrix",
+            "Adjacency List",
+            "BFS",
+            "DFS",
+            "Dijkstra",
+            "Bellman-Ford",
+            "Floyd-Warshall",
+            "Prims",
+            "Kruskals",
+            "Topological Sort",
+            "Cycle Detection",
+            "Strongly Connected Components",
+            "Union-Find"
+          ]
+        },
+        {
+          "name": "Hashing",
+          "position": 7,
+          "sourceRow": 127,
+          "subAreas": [],
+          "tags": [
+            "Hash Functions",
+            "Hash Tables",
+            "Collision Resolution (Chaining, Open Addressing)",
+            "Load Factor",
+            "Rehashing",
+            "Consistent Hashing",
+            "HashMap Implementation"
+          ]
+        },
+        {
+          "name": "Sorting Algorithms",
+          "position": 8,
+          "sourceRow": 128,
+          "subAreas": [],
+          "tags": [
+            "Bubble",
+            "Selection",
+            "Insertion",
+            "Merge",
+            "Quick",
+            "Heap",
+            "Counting",
+            "Radix",
+            "Bucket Sort",
+            "Stability",
+            "In-Place",
+            "Comparison-Based vs Non-Comparison"
+          ]
+        },
+        {
+          "name": "Searching Algorithms",
+          "position": 9,
+          "sourceRow": 129,
+          "subAreas": [],
+          "tags": [
+            "Linear Search",
+            "Binary Search",
+            "Ternary Search",
+            "Search in Rotated Array",
+            "Interpolation Search",
+            "Exponential Search"
+          ]
+        },
+        {
+          "name": "Dynamic Programming",
+          "position": 10,
+          "sourceRow": 130,
+          "subAreas": [],
+          "tags": [
+            "Memoization",
+            "Tabulation",
+            "Optimal Substructure",
+            "Overlapping Subproblems",
+            "0/1 Knapsack",
+            "LCS",
+            "LIS",
+            "Coin Change",
+            "Matrix Chain",
+            "Edit Distance",
+            "DP on Trees",
+            "Bitmask DP"
+          ]
+        },
+        {
+          "name": "Greedy Algorithms",
+          "position": 11,
+          "sourceRow": 131,
+          "subAreas": [],
+          "tags": [
+            "Greedy Choice Property",
+            "Activity Selection",
+            "Fractional Knapsack",
+            "Huffman Coding",
+            "Job Scheduling",
+            "Dijkstra",
+            "Prim",
+            "Kruskal",
+            "Interval Scheduling"
+          ]
+        },
+        {
+          "name": "Backtracking and Divide & Conquer",
+          "position": 12,
+          "sourceRow": 132,
+          "subAreas": [],
+          "tags": [
+            "Backtracking (N-Queens, Sudoku, Permutations, Subsets)",
+            "Divide and Conquer (Merge Sort, Quick Sort, Closest Pair)",
+            "Branch and Bound"
+          ]
+        },
+        {
+          "name": "String Algorithms",
+          "position": 13,
+          "sourceRow": 133,
+          "subAreas": [],
+          "tags": [
+            "Pattern Matching (KMP, Rabin-Karp, Boyer-Moore)",
+            "Trie",
+            "Suffix Array",
+            "Z-Algorithm",
+            "String Hashing",
+            "Anagram Problems",
+            "Palindrome Problems"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "SQL",
+      "position": 17,
+      "areas": [
+        {
+          "name": "SQL Basics and Data Types",
+          "position": 1,
+          "sourceRow": 134,
+          "subAreas": [],
+          "tags": [
+            "SQL Introduction",
+            "RDBMS Concepts",
+            "Data Types (INTEGER, VARCHAR, DATE, BOOLEAN, DECIMAL)",
+            "SQL Standards",
+            "Syntax Rules"
+          ]
+        },
+        {
+          "name": "DDL (Data Definition)",
+          "position": 2,
+          "sourceRow": 135,
+          "subAreas": [],
+          "tags": [
+            "CREATE",
+            "ALTER",
+            "DROP",
+            "TRUNCATE",
+            "Table Structure",
+            "Column Constraints (PRIMARY KEY, FOREIGN KEY, NOT NULL, UNIQUE, CHECK, DEFAULT)",
+            "Schema Design"
+          ]
+        },
+        {
+          "name": "DML and CRUD Operations",
+          "position": 3,
+          "sourceRow": 136,
+          "subAreas": [],
+          "tags": [
+            "SELECT",
+            "INSERT",
+            "UPDATE",
+            "DELETE",
+            "WHERE",
+            "ORDER BY",
+            "LIMIT/OFFSET",
+            "DISTINCT",
+            "Aliases",
+            "LIKE",
+            "BETWEEN",
+            "IN",
+            "IS NULL"
+          ]
+        },
+        {
+          "name": "Joins and Set Operations",
+          "position": 4,
+          "sourceRow": 137,
+          "subAreas": [],
+          "tags": [
+            "INNER JOIN",
+            "LEFT JOIN",
+            "RIGHT JOIN",
+            "FULL OUTER JOIN",
+            "CROSS JOIN",
+            "Self Join",
+            "Natural Join",
+            "UNION",
+            "INTERSECT",
+            "EXCEPT"
+          ]
+        },
+        {
+          "name": "Aggregate Functions and Grouping",
+          "position": 5,
+          "sourceRow": 138,
+          "subAreas": [],
+          "tags": [
+            "COUNT",
+            "SUM",
+            "AVG",
+            "MIN",
+            "MAX",
+            "GROUP BY",
+            "HAVING",
+            "Grouping Sets",
+            "ROLLUP",
+            "CUBE"
+          ]
+        },
+        {
+          "name": "Subqueries and Advanced Queries",
+          "position": 6,
+          "sourceRow": 139,
+          "subAreas": [],
+          "tags": [
+            "Scalar Subqueries",
+            "Correlated Subqueries",
+            "EXISTS",
+            "ANY/ALL",
+            "CTEs (WITH clause)",
+            "Recursive CTEs",
+            "Window Functions (ROW_NUMBER, RANK, DENSE_RANK, LAG, LEAD, NTILE)",
+            "CASE Statement"
+          ]
+        },
+        {
+          "name": "Views and Stored Procedures",
+          "position": 7,
+          "sourceRow": 140,
+          "subAreas": [],
+          "tags": [
+            "Views",
+            "Materialized Views",
+            "Stored Procedures",
+            "Functions",
+            "Triggers",
+            "Cursors",
+            "Transactions (BEGIN, COMMIT, ROLLBACK)",
+            "Savepoints"
+          ]
+        },
+        {
+          "name": "Query Optimization",
+          "position": 8,
+          "sourceRow": 141,
+          "subAreas": [],
+          "tags": [
+            "Execution Plans",
+            "Index Usage",
+            "Query Tuning",
+            "EXPLAIN",
+            "Normalization vs Denormalization",
+            "Covering Indexes",
+            "Partitioning",
+            "Query Rewriting"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Web Development",
+      "position": 18,
+      "areas": [
+        {
+          "name": "Web Fundamentals",
+          "position": 1,
+          "sourceRow": 142,
+          "subAreas": [],
+          "tags": [
+            "Internet Basics",
+            "HTTP/HTTPS",
+            "DNS",
+            "URL Structure",
+            "Client-Server Model",
+            "Web Browsers",
+            "Web Standards (W3C)",
+            "Web Hosting",
+            "Domain Registration"
+          ]
+        },
+        {
+          "name": "HTML",
+          "position": 2,
+          "sourceRow": 143,
+          "subAreas": [],
+          "tags": [
+            "HTML5",
+            "Semantic Elements",
+            "Headings",
+            "Paragraphs",
+            "Lists",
+            "Links",
+            "Images",
+            "Tables",
+            "Forms",
+            "Input Types",
+            "Audio/Video",
+            "Attributes",
+            "Meta Tags",
+            "Accessibility (ARIA)"
+          ]
+        },
+        {
+          "name": "CSS Fundamentals",
+          "position": 3,
+          "sourceRow": 144,
+          "subAreas": [],
+          "tags": [
+            "Selectors",
+            "Box Model",
+            "Typography",
+            "Colors",
+            "Backgrounds",
+            "Margins",
+            "Padding",
+            "Borders",
+            "Specificity",
+            "Cascade",
+            "Inheritance",
+            "CSS Units (px, em, rem, vh, vw)",
+            "CSS Variables"
+          ]
+        },
+        {
+          "name": "CSS Layout and Responsive Design",
+          "position": 4,
+          "sourceRow": 145,
+          "subAreas": [],
+          "tags": [
+            "Flexbox",
+            "CSS Grid",
+            "Positioning (static, relative, absolute, fixed, sticky)",
+            "Display Property",
+            "Float",
+            "Media Queries",
+            "Mobile-First",
+            "Breakpoints",
+            "Viewport Meta Tag"
+          ]
+        },
+        {
+          "name": "CSS Animations",
+          "position": 5,
+          "sourceRow": 146,
+          "subAreas": [],
+          "tags": [
+            "Transitions",
+            "Keyframe Animations",
+            "Transforms (translate, rotate, scale)",
+            "Animation Timing",
+            "Hover Effects",
+            "CSS Variables",
+            "Pseudo-classes",
+            "Pseudo-elements"
+          ]
+        },
+        {
+          "name": "JavaScript Fundamentals",
+          "position": 6,
+          "sourceRow": 147,
+          "subAreas": [],
+          "tags": [
+            "Variables (var, let, const)",
+            "Data Types",
+            "Operators",
+            "Control Flow",
+            "Functions",
+            "Scope",
+            "Hoisting",
+            "Closures",
+            "Arrays",
+            "Objects",
+            "String Methods",
+            "Template Literals",
+            "Destructuring"
+          ]
+        },
+        {
+          "name": "DOM and Events",
+          "position": 7,
+          "sourceRow": 148,
+          "subAreas": [],
+          "tags": [
+            "DOM Selection (getElementById, querySelector)",
+            "Element Manipulation",
+            "Event Listeners",
+            "Event Delegation",
+            "Event Propagation",
+            "Form Handling",
+            "Dynamic Content Creation"
+          ]
+        },
+        {
+          "name": "Advanced JavaScript",
+          "position": 8,
+          "sourceRow": 149,
+          "subAreas": [],
+          "tags": [
+            "Promises",
+            "Async/Await",
+            "Fetch API",
+            "ES6+ Features",
+            "Modules (import/export)",
+            "Classes",
+            "Prototypes",
+            "this Keyword",
+            "Spread/Rest",
+            "Optional Chaining",
+            "Nullish Coalescing"
+          ]
+        },
+        {
+          "name": "Browser Storage and APIs",
+          "position": 9,
+          "sourceRow": 150,
+          "subAreas": [],
+          "tags": [
+            "LocalStorage",
+            "SessionStorage",
+            "Cookies",
+            "IndexedDB",
+            "Service Workers",
+            "Web Workers",
+            "Geolocation API",
+            "Notifications API",
+            "Performance API"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "React JS",
+      "position": 19,
+      "areas": [
+        {
+          "name": "React Fundamentals",
+          "position": 1,
+          "sourceRow": 151,
+          "subAreas": [],
+          "tags": [
+            "JSX",
+            "Components (Functional, Class)",
+            "Props",
+            "State",
+            "Virtual DOM",
+            "Rendering",
+            "Conditional Rendering",
+            "Lists and Keys",
+            "Event Handling",
+            "React DevTools"
+          ]
+        },
+        {
+          "name": "React Hooks",
+          "position": 2,
+          "sourceRow": 152,
+          "subAreas": [],
+          "tags": [
+            "useState",
+            "useEffect",
+            "useContext",
+            "useReducer",
+            "useMemo",
+            "useCallback",
+            "useRef",
+            "useId",
+            "use() Hook",
+            "Custom Hooks",
+            "Rules of Hooks"
+          ]
+        },
+        {
+          "name": "State Management",
+          "position": 3,
+          "sourceRow": 153,
+          "subAreas": [],
+          "tags": [
+            "Lifting State",
+            "Context API",
+            "useReducer",
+            "Redux Toolkit",
+            "Zustand",
+            "State Normalization",
+            "Immutable Updates",
+            "Global vs Local State"
+          ]
+        },
+        {
+          "name": "Component Patterns",
+          "position": 4,
+          "sourceRow": 154,
+          "subAreas": [],
+          "tags": [
+            "Composition",
+            "Higher-Order Components",
+            "Render Props",
+            "Compound Components",
+            "Controlled vs Uncontrolled",
+            "Custom Hooks Pattern",
+            "Container/Presentational"
+          ]
+        },
+        {
+          "name": "Routing",
+          "position": 5,
+          "sourceRow": 155,
+          "subAreas": [],
+          "tags": [
+            "React Router",
+            "BrowserRouter",
+            "Routes",
+            "Route",
+            "Link",
+            "NavLink",
+            "URL Parameters",
+            "Query Strings",
+            "Nested Routes",
+            "Protected Routes",
+            "Programmatic Navigation"
+          ]
+        },
+        {
+          "name": "Forms and Validation",
+          "position": 6,
+          "sourceRow": 156,
+          "subAreas": [],
+          "tags": [
+            "Controlled Forms",
+            "Uncontrolled Forms",
+            "React Hook Form",
+            "Formik",
+            "Form Validation",
+            "Error Handling",
+            "Field Arrays"
+          ]
+        },
+        {
+          "name": "Performance Optimization",
+          "position": 7,
+          "sourceRow": 157,
+          "subAreas": [],
+          "tags": [
+            "React.memo",
+            "useMemo",
+            "useCallback",
+            "Code Splitting",
+            "Lazy Loading",
+            "Suspense",
+            "React Profiler",
+            "Bundle Analysis",
+            "Virtualization"
+          ]
+        },
+        {
+          "name": "React 19 and Modern Features",
+          "position": 8,
+          "sourceRow": 158,
+          "subAreas": [],
+          "tags": [
+            "React Compiler",
+            "Server Components",
+            "Actions API",
+            "use() Hook",
+            "Automatic Batching",
+            "Activity Component",
+            "View Transitions",
+            "Concurrent Features",
+            "Streaming SSR",
+            "Document Metadata"
+          ]
+        },
+        {
+          "name": "Testing",
+          "position": 9,
+          "sourceRow": 159,
+          "subAreas": [],
+          "tags": [
+            "Jest",
+            "React Testing Library",
+            "Component Testing",
+            "Mocking",
+            "Snapshot Testing",
+            "Integration Testing",
+            "User Event Simulation"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Node JS",
+      "position": 20,
+      "areas": [
+        {
+          "name": "Node.js Fundamentals",
+          "position": 1,
+          "sourceRow": 160,
+          "subAreas": [],
+          "tags": [
+            "V8 Engine",
+            "Event-Driven",
+            "Non-Blocking I/O",
+            "Single-Threaded",
+            "Event Loop",
+            "REPL",
+            "Global Objects",
+            "Process Object",
+            "Modules (CommonJS, ES Modules)"
+          ]
+        },
+        {
+          "name": "Core Modules",
+          "position": 2,
+          "sourceRow": 161,
+          "subAreas": [],
+          "tags": [
+            "fs",
+            "path",
+            "os",
+            "http",
+            "crypto",
+            "url",
+            "events",
+            "Buffer",
+            "Streams (Readable, Writable, Transform, Duplex)",
+            "child_process",
+            "cluster"
+          ]
+        },
+        {
+          "name": "NPM and Package Management",
+          "position": 3,
+          "sourceRow": 162,
+          "subAreas": [],
+          "tags": [
+            "package.json",
+            "Dependencies",
+            "DevDependencies",
+            "Semantic Versioning",
+            "NPM Scripts",
+            "npx",
+            "Lock Files",
+            "Global vs Local",
+            "npm audit"
+          ]
+        },
+        {
+          "name": "Asynchronous Programming",
+          "position": 4,
+          "sourceRow": 163,
+          "subAreas": [],
+          "tags": [
+            "Callbacks",
+            "Promises",
+            "Async/Await",
+            "Event Loop Phases",
+            "Microtasks vs Macrotasks",
+            "Promise.all",
+            "Promise.race",
+            "Promise.allSettled",
+            "Error Handling in Async"
+          ]
+        },
+        {
+          "name": "Express.js",
+          "position": 5,
+          "sourceRow": 164,
+          "subAreas": [],
+          "tags": [
+            "Express Setup",
+            "Routing",
+            "Route Parameters",
+            "Middleware (Built-in, Custom, Third-Party)",
+            "Request/Response Objects",
+            "Static Files",
+            "Template Engines",
+            "Error Handling",
+            "CORS"
+          ]
+        },
+        {
+          "name": "RESTful APIs",
+          "position": 6,
+          "sourceRow": 165,
+          "subAreas": [],
+          "tags": [
+            "REST Principles",
+            "HTTP Methods",
+            "Status Codes",
+            "JSON Handling",
+            "API Versioning",
+            "Input Validation (Joi, Zod)",
+            "API Documentation (Swagger)",
+            "Postman",
+            "Rate Limiting"
+          ]
+        },
+        {
+          "name": "Database Integration",
+          "position": 7,
+          "sourceRow": 166,
+          "subAreas": [],
+          "tags": [
+            "MongoDB with Mongoose",
+            "SQL (MySQL, PostgreSQL)",
+            "Sequelize/Prisma ORM",
+            "Connection Pooling",
+            "CRUD Operations",
+            "Migrations",
+            "Query Building"
+          ]
+        },
+        {
+          "name": "Authentication and Security",
+          "position": 8,
+          "sourceRow": 167,
+          "subAreas": [],
+          "tags": [
+            "JWT",
+            "Sessions",
+            "Cookies",
+            "bcrypt",
+            "OAuth 2.0",
+            "Passport.js",
+            "Helmet.js",
+            "CORS",
+            "Input Sanitization",
+            "SQL Injection Prevention",
+            "XSS Protection",
+            "Environment Variables"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Express JS",
+      "position": 21,
+      "areas": [
+        {
+          "name": "Express Fundamentals",
+          "position": 1,
+          "sourceRow": 168,
+          "subAreas": [],
+          "tags": [
+            "Application Setup",
+            "Server Configuration",
+            "HTTP Methods",
+            "Port Configuration",
+            "Express Generator",
+            "Application Structure",
+            "express() Instance"
+          ]
+        },
+        {
+          "name": "Routing",
+          "position": 2,
+          "sourceRow": 169,
+          "subAreas": [],
+          "tags": [
+            "Route Methods",
+            "Route Paths",
+            "Route Parameters",
+            "Query Parameters",
+            "Router Module",
+            "Route Handlers",
+            "Nested Routes",
+            "Route Chaining",
+            "Regular Expression Routes"
+          ]
+        },
+        {
+          "name": "Middleware",
+          "position": 3,
+          "sourceRow": 170,
+          "subAreas": [],
+          "tags": [
+            "Application-Level",
+            "Router-Level",
+            "Error-Handling",
+            "Built-in (json, urlencoded, static)",
+            "Third-Party (morgan, cors, helmet)",
+            "Middleware Order",
+            "Custom Middleware"
+          ]
+        },
+        {
+          "name": "Request and Response",
+          "position": 4,
+          "sourceRow": 171,
+          "subAreas": [],
+          "tags": [
+            "req.body",
+            "req.params",
+            "req.query",
+            "req.headers",
+            "req.cookies",
+            "res.send",
+            "res.json",
+            "res.status",
+            "res.redirect",
+            "res.render",
+            "Content Negotiation"
+          ]
+        },
+        {
+          "name": "Template Engines",
+          "position": 5,
+          "sourceRow": 172,
+          "subAreas": [],
+          "tags": [
+            "EJS",
+            "Pug",
+            "Handlebars",
+            "View Engine Setup",
+            "Template Rendering",
+            "Layouts",
+            "Partials",
+            "Dynamic HTML",
+            "Passing Data to Views"
+          ]
+        },
+        {
+          "name": "Error Handling and Debugging",
+          "position": 6,
+          "sourceRow": 173,
+          "subAreas": [],
+          "tags": [
+            "Error Middleware",
+            "Custom Error Classes",
+            "Async Error Handling (express-async-errors)",
+            "Debug Module",
+            "Logging (Winston, Morgan)",
+            "Production vs Development Errors"
+          ]
+        },
+        {
+          "name": "API Development",
+          "position": 7,
+          "sourceRow": 174,
+          "subAreas": [],
+          "tags": [
+            "RESTful API Design",
+            "JSON Responses",
+            "Status Codes",
+            "API Versioning",
+            "CORS",
+            "Input Validation",
+            "API Documentation",
+            "Rate Limiting",
+            "Response Formatting"
+          ]
+        },
+        {
+          "name": "Security",
+          "position": 8,
+          "sourceRow": 175,
+          "subAreas": [],
+          "tags": [
+            "Helmet.js",
+            "CORS",
+            "Input Sanitization",
+            "Authentication Middleware",
+            "Session Management",
+            "JWT",
+            "HTTPS",
+            "Rate Limiting",
+            "Data Validation"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "MongoDB",
+      "position": 22,
+      "areas": [
+        {
+          "name": "MongoDB Fundamentals",
+          "position": 1,
+          "sourceRow": 176,
+          "subAreas": [],
+          "tags": [
+            "NoSQL Concepts",
+            "Document Model",
+            "JSON/BSON",
+            "MongoDB Atlas",
+            "Database",
+            "Collection",
+            "Document",
+            "Data Types",
+            "Schema Design",
+            "MongoDB Shell"
+          ]
+        },
+        {
+          "name": "CRUD Operations",
+          "position": 2,
+          "sourceRow": 177,
+          "subAreas": [],
+          "tags": [
+            "insertOne",
+            "insertMany",
+            "find",
+            "findOne",
+            "updateOne",
+            "updateMany",
+            "replaceOne",
+            "deleteOne",
+            "deleteMany",
+            "Query Operators ($eq, $gt, $lt, $in, $regex)",
+            "Projection"
+          ]
+        },
+        {
+          "name": "Data Modeling",
+          "position": 3,
+          "sourceRow": 178,
+          "subAreas": [],
+          "tags": [
+            "Embedded Documents",
+            "Referenced Documents",
+            "One-to-One",
+            "One-to-Many",
+            "Many-to-Many",
+            "Schema Validation",
+            "Denormalization vs Normalization",
+            "Document Size Limits"
+          ]
+        },
+        {
+          "name": "Aggregation Framework",
+          "position": 4,
+          "sourceRow": 179,
+          "subAreas": [],
+          "tags": [
+            "Pipeline Stages ($match, $group, $project, $sort, $limit, $skip, $lookup, $unwind)",
+            "Pipeline Operators",
+            "$facet",
+            "Map-Reduce"
+          ]
+        },
+        {
+          "name": "Indexing and Performance",
+          "position": 5,
+          "sourceRow": 180,
+          "subAreas": [],
+          "tags": [
+            "Single Field Index",
+            "Compound Index",
+            "Multikey Index",
+            "Text Index",
+            "Geospatial Index",
+            "Explain Plans",
+            "Index Optimization",
+            "Covered Queries"
+          ]
+        },
+        {
+          "name": "Replication and Sharding",
+          "position": 6,
+          "sourceRow": 181,
+          "subAreas": [],
+          "tags": [
+            "Replica Sets",
+            "Primary/Secondary",
+            "Read Preferences",
+            "Write Concerns",
+            "Automatic Failover",
+            "Sharding",
+            "Shard Keys",
+            "Chunks",
+            "Config Servers",
+            "Query Routing"
+          ]
+        },
+        {
+          "name": "Security and Administration",
+          "position": 7,
+          "sourceRow": 182,
+          "subAreas": [],
+          "tags": [
+            "Authentication",
+            "Authorization",
+            "RBAC",
+            "User Management",
+            "Encryption",
+            "Backup (mongodump, mongorestore)",
+            "Monitoring",
+            "Performance Tuning",
+            "Connection Strings"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Java Full Stack",
+      "position": 23,
+      "areas": [
+        {
+          "name": "Core Java",
+          "position": 1,
+          "sourceRow": 183,
+          "subAreas": [],
+          "tags": [
+            "Data Types",
+            "OOP",
+            "Collections",
+            "Exception Handling",
+            "Multithreading",
+            "Streams API",
+            "Generics",
+            "Java 8+ Features",
+            "Lambda Expressions"
+          ]
+        },
+        {
+          "name": "Spring Framework",
+          "position": 2,
+          "sourceRow": 184,
+          "subAreas": [
+            {
+              "name": "Spring Core",
+              "position": 1
+            },
+            {
+              "name": "Spring Boot",
+              "position": 2
+            }
+          ],
+          "tags": [
+            "Dependency Injection",
+            "IoC Container",
+            "Bean Lifecycle",
+            "Annotations",
+            "Spring Boot Auto-configuration",
+            "Starters",
+            "Profiles",
+            "Actuator",
+            "Spring AOP"
+          ]
+        },
+        {
+          "name": "Spring MVC and REST",
+          "position": 3,
+          "sourceRow": 185,
+          "subAreas": [],
+          "tags": [
+            "DispatcherServlet",
+            "Controllers",
+            "@RequestMapping",
+            "@RestController",
+            "Request/Response Handling",
+            "Exception Handling (@ControllerAdvice)",
+            "Content Negotiation",
+            "HATEOAS"
+          ]
+        },
+        {
+          "name": "Spring Security",
+          "position": 4,
+          "sourceRow": 186,
+          "subAreas": [],
+          "tags": [
+            "Authentication",
+            "Authorization",
+            "Security Filters",
+            "JWT",
+            "OAuth 2.0",
+            "CORS",
+            "CSRF",
+            "Role-Based Access",
+            "Method-Level Security",
+            "Spring Security Configuration"
+          ]
+        },
+        {
+          "name": "Hibernate and JPA",
+          "position": 5,
+          "sourceRow": 187,
+          "subAreas": [],
+          "tags": [
+            "ORM",
+            "Entity Mapping",
+            "Annotations",
+            "Session/EntityManager",
+            "CRUD",
+            "HQL",
+            "JPQL",
+            "Criteria API",
+            "Relationships (OneToOne, OneToMany, ManyToMany)",
+            "Lazy/Eager Loading",
+            "Caching",
+            "Transactions"
+          ]
+        },
+        {
+          "name": "Database (SQL)",
+          "position": 6,
+          "sourceRow": 188,
+          "subAreas": [],
+          "tags": [
+            "SQL Fundamentals",
+            "MySQL/PostgreSQL",
+            "Joins",
+            "Stored Procedures",
+            "Normalization",
+            "Database Design",
+            "Connection Pooling (HikariCP)",
+            "Flyway Migrations"
+          ]
+        },
+        {
+          "name": "Frontend (Angular/React)",
+          "position": 7,
+          "sourceRow": 189,
+          "subAreas": [],
+          "tags": [
+            "TypeScript",
+            "Components",
+            "Data Binding",
+            "Services",
+            "Routing",
+            "HTTP Client",
+            "Reactive Forms",
+            "RxJS",
+            "Angular Material",
+            "Component Lifecycle"
+          ]
+        },
+        {
+          "name": "Microservices",
+          "position": 8,
+          "sourceRow": 190,
+          "subAreas": [],
+          "tags": [
+            "Spring Cloud",
+            "Service Discovery (Eureka)",
+            "API Gateway",
+            "Circuit Breaker (Resilience4j)",
+            "Config Server",
+            "Load Balancing",
+            "Inter-Service Communication (REST, gRPC, Kafka)",
+            "Distributed Tracing"
+          ]
+        },
+        {
+          "name": "DevOps and Deployment",
+          "position": 9,
+          "sourceRow": 191,
+          "subAreas": [],
+          "tags": [
+            "Git",
+            "Maven/Gradle",
+            "Docker",
+            "Jenkins",
+            "JUnit",
+            "Mockito",
+            "Integration Testing",
+            "CI/CD",
+            "Cloud Deployment (AWS, Azure)",
+            "Logging (SLF4J, Logback)"
+          ]
+        }
+      ]
+    },
+    {
+      "name": ".NET Full Stack",
+      "position": 24,
+      "areas": [
+        {
+          "name": "C# Fundamentals",
+          "position": 1,
+          "sourceRow": 192,
+          "subAreas": [],
+          "tags": [
+            "Data Types",
+            "Variables",
+            "Operators",
+            "Control Flow",
+            "Loops",
+            "Arrays",
+            "Strings",
+            "Type Casting",
+            "Nullable Types",
+            "Naming Conventions",
+            "Console I/O"
+          ]
+        },
+        {
+          "name": "C# OOP",
+          "position": 2,
+          "sourceRow": 193,
+          "subAreas": [],
+          "tags": [
+            "Classes",
+            "Objects",
+            "Constructors",
+            "Properties",
+            "Access Modifiers",
+            "Encapsulation",
+            "Inheritance",
+            "Polymorphism",
+            "Abstract Classes",
+            "Interfaces",
+            "Sealed Classes",
+            "Partial Classes",
+            "Static Members"
+          ]
+        },
+        {
+          "name": "C# Advanced Features",
+          "position": 3,
+          "sourceRow": 194,
+          "subAreas": [],
+          "tags": [
+            "Generics",
+            "Collections (List, Dictionary, Queue, Stack, HashSet)",
+            "Delegates",
+            "Events",
+            "Lambda",
+            "LINQ",
+            "Extension Methods",
+            "Async/Await",
+            "Records",
+            "Pattern Matching",
+            "Tuples",
+            "Nullable Reference Types"
+          ]
+        },
+        {
+          "name": ".NET Platform and CLR",
+          "position": 4,
+          "sourceRow": 195,
+          "subAreas": [],
+          "tags": [
+            ".NET 8/9/10",
+            "CLR",
+            "CTS",
+            "Managed Code",
+            "Garbage Collection",
+            "Assemblies",
+            "NuGet",
+            ".NET CLI",
+            "AOT Compilation",
+            ".NET Aspire"
+          ]
+        },
+        {
+          "name": "ASP.NET Core MVC",
+          "position": 5,
+          "sourceRow": 196,
+          "subAreas": [],
+          "tags": [
+            "MVC Pattern",
+            "Routing",
+            "Controllers",
+            "Views",
+            "Razor Syntax",
+            "Tag Helpers",
+            "Model Binding",
+            "Data Annotations",
+            "Partial Views",
+            "View Components",
+            "Layouts",
+            "Areas",
+            "Filters"
+          ]
+        },
+        {
+          "name": "ASP.NET Core Web API",
+          "position": 6,
+          "sourceRow": 197,
+          "subAreas": [],
+          "tags": [
+            "REST",
+            "Minimal APIs",
+            "API Controllers",
+            "Model Validation",
+            "Content Negotiation",
+            "API Versioning",
+            "OpenAPI/Swagger",
+            "Response Formatting",
+            "Action Results",
+            "Rate Limiting"
+          ]
+        },
+        {
+          "name": "Entity Framework Core",
+          "position": 7,
+          "sourceRow": 198,
+          "subAreas": [],
+          "tags": [
+            "Code-First",
+            "Database-First",
+            "DbContext",
+            "Migrations",
+            "LINQ to Entities",
+            "Relationships",
+            "Lazy/Eager/Explicit Loading",
+            "Raw SQL",
+            "Query Optimization",
+            "Interceptors",
+            "Bulk Operations"
+          ]
+        },
+        {
+          "name": "Authentication and Authorization",
+          "position": 8,
+          "sourceRow": 199,
+          "subAreas": [],
+          "tags": [
+            "ASP.NET Core Identity",
+            "JWT",
+            "OAuth 2.0",
+            "OpenID Connect",
+            "Cookie Auth",
+            "Role-Based",
+            "Claims-Based",
+            "Policy-Based",
+            "2FA",
+            "Social Login"
+          ]
+        },
+        {
+          "name": "Dependency Injection and Middleware",
+          "position": 9,
+          "sourceRow": 200,
+          "subAreas": [],
+          "tags": [
+            "DI Container",
+            "Service Lifetimes (Transient, Scoped, Singleton)",
+            "Middleware Pipeline",
+            "Custom Middleware",
+            "Filters",
+            "Configuration",
+            "Options Pattern",
+            "Health Checks"
+          ]
+        },
+        {
+          "name": "Blazor",
+          "position": 10,
+          "sourceRow": 201,
+          "subAreas": [],
+          "tags": [
+            "Blazor Server",
+            "Blazor WebAssembly",
+            "Blazor United",
+            "Components",
+            "Data Binding",
+            "Event Handling",
+            "JS Interop",
+            "Forms and Validation",
+            "Routing",
+            "State Management"
+          ]
+        },
+        {
+          "name": "SQL Server",
+          "position": 11,
+          "sourceRow": 202,
+          "subAreas": [],
+          "tags": [
+            "T-SQL",
+            "Stored Procedures",
+            "Functions",
+            "Triggers",
+            "Views",
+            "Indexes",
+            "Query Optimization",
+            "Joins",
+            "Transactions",
+            "Connection Strings",
+            "ADO.NET",
+            "Dapper"
+          ]
+        },
+        {
+          "name": "Frontend (Angular/React)",
+          "position": 12,
+          "sourceRow": 203,
+          "subAreas": [],
+          "tags": [
+            "TypeScript",
+            "Components",
+            "Data Binding",
+            "Routing",
+            "HTTP Client",
+            "State Management",
+            "Reactive Forms",
+            "Angular Material",
+            "React Hooks",
+            "API Integration"
+          ]
+        },
+        {
+          "name": "Microservices and Cloud",
+          "position": 13,
+          "sourceRow": 204,
+          "subAreas": [],
+          "tags": [
+            "Microservices Design",
+            "API Gateway (YARP, Ocelot)",
+            "gRPC",
+            "Docker",
+            "Kubernetes",
+            "Azure Services (App Service, Functions, Service Bus, Key Vault)",
+            "SignalR",
+            "Distributed Caching"
+          ]
+        },
+        {
+          "name": "Testing and DevOps",
+          "position": 14,
+          "sourceRow": 205,
+          "subAreas": [],
+          "tags": [
+            "xUnit",
+            "NUnit",
+            "Moq",
+            "Integration Testing",
+            "TDD",
+            "Git",
+            "Azure DevOps",
+            "GitHub Actions",
+            "CI/CD",
+            "Docker",
+            "IIS Deployment",
+            "Azure Deployment"
+          ]
+        },
+        {
+          "name": "Design Patterns",
+          "position": 15,
+          "sourceRow": 206,
+          "subAreas": [],
+          "tags": [
+            "Repository",
+            "Unit of Work",
+            "Factory",
+            "Singleton",
+            "Strategy",
+            "Observer",
+            "CQRS",
+            "Mediator (MediatR)",
+            "Clean Architecture",
+            "Onion Architecture",
+            "DDD",
+            "SOLID"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Python Django",
+      "position": 25,
+      "areas": [
+        {
+          "name": "Python Essentials",
+          "position": 1,
+          "sourceRow": 207,
+          "subAreas": [],
+          "tags": [
+            "Python Syntax",
+            "Data Types",
+            "Control Structures",
+            "Functions",
+            "OOP",
+            "Exception Handling",
+            "File Operations",
+            "Modules",
+            "List/Dict Comprehensions"
+          ]
+        },
+        {
+          "name": "Django Fundamentals",
+          "position": 2,
+          "sourceRow": 208,
+          "subAreas": [],
+          "tags": [
+            "MVT Architecture",
+            "Project/App Structure",
+            "URLs and Routing",
+            "Views (FBV, CBV)",
+            "Templates",
+            "Django ORM",
+            "Models",
+            "Migrations",
+            "Admin Interface",
+            "Settings Configuration"
+          ]
+        },
+        {
+          "name": "Models and Database",
+          "position": 3,
+          "sourceRow": 209,
+          "subAreas": [],
+          "tags": [
+            "Model Fields",
+            "Relationships (ForeignKey, ManyToMany, OneToOne)",
+            "Querysets",
+            "Managers",
+            "Aggregation",
+            "Q Objects",
+            "F Expressions",
+            "Raw SQL",
+            "PostgreSQL/MySQL",
+            "Migrations"
+          ]
+        },
+        {
+          "name": "Views and Templates",
+          "position": 4,
+          "sourceRow": 210,
+          "subAreas": [],
+          "tags": [
+            "Function-Based Views",
+            "Class-Based Views (ListView, DetailView, CreateView, UpdateView)",
+            "Template Engine",
+            "Template Tags",
+            "Filters",
+            "Context Processors",
+            "Template Inheritance"
+          ]
+        },
+        {
+          "name": "Forms and Validation",
+          "position": 5,
+          "sourceRow": 211,
+          "subAreas": [],
+          "tags": [
+            "Django Forms",
+            "ModelForms",
+            "Form Validation",
+            "Custom Validators",
+            "Formsets",
+            "File Upload Handling",
+            "CSRF Protection",
+            "Widgets"
+          ]
+        },
+        {
+          "name": "Authentication and Authorization",
+          "position": 6,
+          "sourceRow": 212,
+          "subAreas": [],
+          "tags": [
+            "Django Auth System",
+            "User Model",
+            "Login/Logout",
+            "Registration",
+            "Password Reset",
+            "Permissions",
+            "Groups",
+            "Custom User Model",
+            "Social Auth",
+            "Session Management"
+          ]
+        },
+        {
+          "name": "Django REST Framework",
+          "position": 7,
+          "sourceRow": 213,
+          "subAreas": [],
+          "tags": [
+            "Serializers",
+            "ViewSets",
+            "Routers",
+            "API Views",
+            "Authentication (Token, JWT)",
+            "Permissions",
+            "Pagination",
+            "Filtering",
+            "Throttling",
+            "Nested Serializers"
+          ]
+        },
+        {
+          "name": "Frontend Integration",
+          "position": 8,
+          "sourceRow": 214,
+          "subAreas": [],
+          "tags": [
+            "Static Files",
+            "Media Files",
+            "Django Templates + JS",
+            "AJAX",
+            "HTMX",
+            "React/Vue Integration",
+            "WebSocket (Django Channels)",
+            "Asset Management"
+          ]
+        },
+        {
+          "name": "Testing and Deployment",
+          "position": 9,
+          "sourceRow": 215,
+          "subAreas": [],
+          "tags": [
+            "Django TestCase",
+            "pytest-django",
+            "Factory Boy",
+            "Mocking",
+            "Docker",
+            "Gunicorn",
+            "Nginx",
+            "Cloud Deployment (AWS, Heroku, DigitalOcean)",
+            "CI/CD",
+            "Production Settings"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Data Science and Machine Learning",
+      "position": 26,
+      "areas": [
+        {
+          "name": "Mathematics and Statistics",
+          "position": 1,
+          "sourceRow": 216,
+          "subAreas": [],
+          "tags": [
+            "Linear Algebra",
+            "Calculus",
+            "Probability",
+            "Distributions",
+            "Descriptive Statistics",
+            "Inferential Statistics",
+            "Hypothesis Testing",
+            "Bayes Theorem",
+            "Correlation",
+            "Covariance"
+          ]
+        },
+        {
+          "name": "Data Manipulation (Pandas)",
+          "position": 2,
+          "sourceRow": 217,
+          "subAreas": [],
+          "tags": [
+            "DataFrames",
+            "Series",
+            "Indexing",
+            "Filtering",
+            "GroupBy",
+            "Merge/Join",
+            "Pivot Tables",
+            "Missing Values",
+            "Data Cleaning",
+            "Feature Engineering",
+            "Data Transformation"
+          ]
+        },
+        {
+          "name": "Data Visualization",
+          "position": 3,
+          "sourceRow": 218,
+          "subAreas": [],
+          "tags": [
+            "Matplotlib",
+            "Seaborn",
+            "Plotly",
+            "Histograms",
+            "Scatter Plots",
+            "Box Plots",
+            "Heatmaps",
+            "Bar Charts",
+            "Distribution Plots",
+            "Pair Plots",
+            "Interactive Dashboards"
+          ]
+        },
+        {
+          "name": "NumPy",
+          "position": 4,
+          "sourceRow": 219,
+          "subAreas": [],
+          "tags": [
+            "Arrays",
+            "Vectorization",
+            "Broadcasting",
+            "Matrix Operations",
+            "Linear Algebra Operations",
+            "Random Module",
+            "Indexing/Slicing",
+            "Mathematical Functions"
+          ]
+        },
+        {
+          "name": "Supervised Learning",
+          "position": 5,
+          "sourceRow": 220,
+          "subAreas": [],
+          "tags": [
+            "Linear Regression",
+            "Logistic Regression",
+            "Decision Trees",
+            "Random Forest",
+            "SVM",
+            "KNN",
+            "Gradient Boosting (XGBoost, LightGBM)",
+            "Naive Bayes",
+            "Cross-Validation",
+            "Hyperparameter Tuning"
+          ]
+        },
+        {
+          "name": "Unsupervised Learning",
+          "position": 6,
+          "sourceRow": 221,
+          "subAreas": [],
+          "tags": [
+            "K-Means",
+            "Hierarchical Clustering",
+            "DBSCAN",
+            "PCA",
+            "t-SNE",
+            "Anomaly Detection",
+            "Association Rules",
+            "Gaussian Mixture Models",
+            "Dimensionality Reduction"
+          ]
+        },
+        {
+          "name": "Model Evaluation",
+          "position": 7,
+          "sourceRow": 222,
+          "subAreas": [],
+          "tags": [
+            "Accuracy",
+            "Precision",
+            "Recall",
+            "F1-Score",
+            "ROC-AUC",
+            "Confusion Matrix",
+            "Cross-Validation",
+            "Bias-Variance Tradeoff",
+            "Overfitting",
+            "Underfitting",
+            "Regularization (L1/L2)"
+          ]
+        },
+        {
+          "name": "NLP Basics",
+          "position": 8,
+          "sourceRow": 223,
+          "subAreas": [],
+          "tags": [
+            "Tokenization",
+            "Stemming",
+            "Lemmatization",
+            "Bag-of-Words",
+            "TF-IDF",
+            "Word Embeddings (Word2Vec, GloVe)",
+            "Sentiment Analysis",
+            "Text Classification",
+            "Named Entity Recognition"
+          ]
+        },
+        {
+          "name": "MLOps and Deployment",
+          "position": 9,
+          "sourceRow": 224,
+          "subAreas": [],
+          "tags": [
+            "Model Deployment",
+            "Docker",
+            "MLflow",
+            "Model Monitoring",
+            "CI/CD for ML",
+            "API Serving (Flask, FastAPI)",
+            "Model Versioning",
+            "Feature Stores",
+            "Experiment Tracking"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Deep Learning",
+      "position": 27,
+      "areas": [
+        {
+          "name": "Neural Network Fundamentals",
+          "position": 1,
+          "sourceRow": 225,
+          "subAreas": [],
+          "tags": [
+            "Perceptron",
+            "MLP",
+            "Activation Functions (ReLU, Sigmoid, Tanh, Softmax)",
+            "Forward Propagation",
+            "Backpropagation",
+            "Gradient Descent",
+            "Loss Functions",
+            "Weight Initialization"
+          ]
+        },
+        {
+          "name": "Training and Optimization",
+          "position": 2,
+          "sourceRow": 226,
+          "subAreas": [],
+          "tags": [
+            "SGD",
+            "Adam",
+            "RMSprop",
+            "Learning Rate Scheduling",
+            "Batch Normalization",
+            "Dropout",
+            "L1/L2 Regularization",
+            "Early Stopping",
+            "Data Augmentation",
+            "Hyperparameter Tuning",
+            "Vanishing/Exploding Gradients"
+          ]
+        },
+        {
+          "name": "CNNs (Computer Vision)",
+          "position": 3,
+          "sourceRow": 227,
+          "subAreas": [],
+          "tags": [
+            "Convolution",
+            "Pooling",
+            "CNN Architectures (LeNet, AlexNet, VGG, ResNet, EfficientNet)",
+            "Image Classification",
+            "Object Detection (YOLO)",
+            "Semantic Segmentation",
+            "Transfer Learning"
+          ]
+        },
+        {
+          "name": "RNNs and Sequence Models",
+          "position": 4,
+          "sourceRow": 228,
+          "subAreas": [],
+          "tags": [
+            "RNN Architecture",
+            "LSTM",
+            "GRU",
+            "Bidirectional RNNs",
+            "Seq2Seq",
+            "Attention Mechanism",
+            "Time Series",
+            "Text Generation",
+            "Vanishing Gradient in RNNs"
+          ]
+        },
+        {
+          "name": "Transformers",
+          "position": 5,
+          "sourceRow": 229,
+          "subAreas": [],
+          "tags": [
+            "Self-Attention",
+            "Multi-Head Attention",
+            "Positional Encoding",
+            "Encoder-Decoder",
+            "BERT",
+            "GPT",
+            "Vision Transformers (ViT)",
+            "Tokenization",
+            "Fine-Tuning Transformers"
+          ]
+        },
+        {
+          "name": "Generative Models",
+          "position": 6,
+          "sourceRow": 230,
+          "subAreas": [],
+          "tags": [
+            "GANs",
+            "VAEs",
+            "Diffusion Models",
+            "Image Generation",
+            "Style Transfer",
+            "Data Augmentation with Generative Models"
+          ]
+        },
+        {
+          "name": "Frameworks and Deployment",
+          "position": 7,
+          "sourceRow": 231,
+          "subAreas": [],
+          "tags": [
+            "PyTorch",
+            "TensorFlow",
+            "Keras",
+            "Model Building",
+            "Computational Graphs",
+            "GPU Training",
+            "TensorBoard",
+            "Model Export (ONNX)",
+            "Quantization",
+            "Edge Deployment",
+            "Model Serving"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Generative AI",
+      "position": 28,
+      "areas": [
+        {
+          "name": "GenAI Fundamentals",
+          "position": 1,
+          "sourceRow": 232,
+          "subAreas": [],
+          "tags": [
+            "Generative vs Discriminative",
+            "Foundation Models",
+            "Transformer Architecture",
+            "Pre-training",
+            "Fine-Tuning",
+            "Transfer Learning",
+            "Tokenization",
+            "Embeddings"
+          ]
+        },
+        {
+          "name": "Large Language Models",
+          "position": 2,
+          "sourceRow": 233,
+          "subAreas": [],
+          "tags": [
+            "GPT",
+            "Claude",
+            "Gemini",
+            "Llama",
+            "Model Parameters",
+            "Context Windows",
+            "Inference",
+            "Temperature",
+            "Top-p",
+            "Token Limits",
+            "LLM Capabilities and Limitations"
+          ]
+        },
+        {
+          "name": "Prompt Engineering",
+          "position": 3,
+          "sourceRow": 234,
+          "subAreas": [],
+          "tags": [
+            "Zero-Shot",
+            "Few-Shot",
+            "Chain-of-Thought",
+            "Tree-of-Thought",
+            "Role-Based Prompting",
+            "System Prompts",
+            "Prompt Templates",
+            "Iterative Refinement",
+            "Prompt Chaining",
+            "Output Formatting"
+          ]
+        },
+        {
+          "name": "RAG (Retrieval Augmented Generation)",
+          "position": 4,
+          "sourceRow": 235,
+          "subAreas": [],
+          "tags": [
+            "RAG Architecture",
+            "Vector Databases (Pinecone, Weaviate, ChromaDB)",
+            "Embeddings",
+            "Chunking Strategies",
+            "Retrieval Methods",
+            "Re-ranking",
+            "Contextual Compression",
+            "Hybrid Search"
+          ]
+        },
+        {
+          "name": "Agentic AI",
+          "position": 5,
+          "sourceRow": 236,
+          "subAreas": [],
+          "tags": [
+            "Autonomous Agents",
+            "Multi-Agent Systems",
+            "Tool Use",
+            "Planning and Reasoning",
+            "Memory (Short-term, Long-term)",
+            "Agent Orchestration",
+            "ReAct Pattern",
+            "Function Calling",
+            "MCP",
+            "Agent Frameworks"
+          ]
+        },
+        {
+          "name": "Multimodal AI",
+          "position": 6,
+          "sourceRow": 237,
+          "subAreas": [],
+          "tags": [
+            "Text-to-Image (DALL-E, Stable Diffusion, Midjourney)",
+            "Text-to-Video",
+            "Text-to-Audio",
+            "Image-to-Text",
+            "Code Generation (Copilot, Codex)",
+            "Vision-Language Models"
+          ]
+        },
+        {
+          "name": "Fine-Tuning and Customization",
+          "position": 7,
+          "sourceRow": 238,
+          "subAreas": [],
+          "tags": [
+            "Full Fine-Tuning",
+            "LoRA",
+            "QLoRA",
+            "RLHF",
+            "DPO",
+            "Instruction Tuning",
+            "Domain Adaptation",
+            "Training Data Preparation",
+            "Evaluation Metrics"
+          ]
+        },
+        {
+          "name": "Tools and Frameworks",
+          "position": 8,
+          "sourceRow": 239,
+          "subAreas": [],
+          "tags": [
+            "LangChain",
+            "LlamaIndex",
+            "Hugging Face",
+            "OpenAI API",
+            "Anthropic API",
+            "Semantic Kernel",
+            "Haystack",
+            "Vector Databases",
+            "Prompt Management Tools"
+          ]
+        },
+        {
+          "name": "LLMOps and Deployment",
+          "position": 9,
+          "sourceRow": 240,
+          "subAreas": [],
+          "tags": [
+            "Model Serving",
+            "API Integration",
+            "Token Optimization",
+            "Cost Management",
+            "Monitoring",
+            "A/B Testing",
+            "Guardrails",
+            "Caching",
+            "Scaling",
+            "Latency Optimization"
+          ]
+        },
+        {
+          "name": "Ethics and Safety",
+          "position": 10,
+          "sourceRow": 241,
+          "subAreas": [],
+          "tags": [
+            "AI Alignment",
+            "Bias and Fairness",
+            "Hallucination Detection",
+            "Content Safety",
+            "Privacy",
+            "Intellectual Property",
+            "Deepfakes",
+            "Responsible AI",
+            "AI Governance",
+            "Regulatory Compliance"
+          ]
+        },
+        {
+          "name": "Evaluation Metrics",
+          "position": 11,
+          "sourceRow": 242,
+          "subAreas": [],
+          "tags": [
+            "BLEU",
+            "ROUGE",
+            "Perplexity",
+            "Human Evaluation",
+            "Faithfulness",
+            "Answer Relevancy",
+            "Context Relevancy",
+            "Hallucination Detection",
+            "RAGAS Framework"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Big Data Analytics",
+      "position": 29,
+      "areas": [
+        {
+          "name": "Big Data Fundamentals",
+          "position": 1,
+          "sourceRow": 243,
+          "subAreas": [],
+          "tags": [
+            "5 Vs (Volume, Velocity, Variety, Veracity, Value)",
+            "Structured vs Unstructured Data",
+            "Data Sources",
+            "Big Data Challenges",
+            "Business Use Cases"
+          ]
+        },
+        {
+          "name": "Hadoop Ecosystem",
+          "position": 2,
+          "sourceRow": 244,
+          "subAreas": [],
+          "tags": [
+            "HDFS",
+            "MapReduce",
+            "YARN",
+            "NameNode",
+            "DataNode",
+            "Hadoop Architecture",
+            "Hive",
+            "Pig",
+            "HBase",
+            "Hadoop Commands"
+          ]
+        },
+        {
+          "name": "Apache Spark",
+          "position": 3,
+          "sourceRow": 245,
+          "subAreas": [],
+          "tags": [
+            "Spark Architecture",
+            "RDDs",
+            "DataFrames",
+            "Spark SQL",
+            "PySpark",
+            "Transformations vs Actions",
+            "Lazy Evaluation",
+            "Spark Streaming",
+            "MLlib",
+            "Catalyst Optimizer"
+          ]
+        },
+        {
+          "name": "NoSQL Databases",
+          "position": 4,
+          "sourceRow": 246,
+          "subAreas": [],
+          "tags": [
+            "MongoDB",
+            "Cassandra",
+            "HBase",
+            "Neo4j",
+            "Document",
+            "Key-Value",
+            "Column-Family",
+            "Graph Databases",
+            "CAP Theorem",
+            "ACID vs BASE"
+          ]
+        },
+        {
+          "name": "Data Processing and ETL",
+          "position": 5,
+          "sourceRow": 247,
+          "subAreas": [],
+          "tags": [
+            "ETL Pipelines",
+            "Apache Kafka",
+            "Data Ingestion",
+            "Stream Processing",
+            "Batch Processing",
+            "Apache Airflow",
+            "Data Quality",
+            "Data Transformation"
+          ]
+        },
+        {
+          "name": "Data Visualization and BI",
+          "position": 6,
+          "sourceRow": 248,
+          "subAreas": [],
+          "tags": [
+            "Tableau",
+            "Power BI",
+            "Apache Superset",
+            "Dashboard Design",
+            "KPI Metrics",
+            "Data Storytelling",
+            "Interactive Visualizations",
+            "Reporting"
+          ]
+        },
+        {
+          "name": "Data Governance and Security",
+          "position": 7,
+          "sourceRow": 249,
+          "subAreas": [],
+          "tags": [
+            "Data Privacy",
+            "GDPR",
+            "Data Lineage",
+            "Data Quality",
+            "Master Data Management",
+            "Data Catalog",
+            "Metadata Management",
+            "Encryption",
+            "Access Control"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Cloud Computing",
+      "position": 30,
+      "areas": [
+        {
+          "name": "Cloud Fundamentals",
+          "position": 1,
+          "sourceRow": 250,
+          "subAreas": [],
+          "tags": [
+            "Cloud Characteristics",
+            "Service Models (IaaS, PaaS, SaaS)",
+            "Deployment Models (Public, Private, Hybrid)",
+            "Cloud Architecture",
+            "Benefits and Challenges",
+            "Cloud Providers (AWS, Azure, GCP)"
+          ]
+        },
+        {
+          "name": "Compute and Storage",
+          "position": 2,
+          "sourceRow": 251,
+          "subAreas": [],
+          "tags": [
+            "Virtual Machines",
+            "Auto-scaling",
+            "Load Balancing",
+            "Serverless (Lambda, Azure Functions)",
+            "Object Storage (S3)",
+            "Block Storage",
+            "File Storage",
+            "CDN",
+            "Database as a Service"
+          ]
+        },
+        {
+          "name": "Networking and Security",
+          "position": 3,
+          "sourceRow": 252,
+          "subAreas": [],
+          "tags": [
+            "VPC",
+            "Subnets",
+            "Security Groups",
+            "IAM",
+            "Encryption",
+            "SSL/TLS",
+            "Compliance",
+            "Shared Responsibility Model",
+            "Zero Trust",
+            "Key Management"
+          ]
+        },
+        {
+          "name": "Containers and Serverless",
+          "position": 4,
+          "sourceRow": 253,
+          "subAreas": [],
+          "tags": [
+            "Docker on Cloud",
+            "Kubernetes (EKS, AKS, GKE)",
+            "Container Registry",
+            "Serverless Architecture",
+            "FaaS",
+            "Event-Driven Computing",
+            "Cloud Functions"
+          ]
+        },
+        {
+          "name": "Cloud Services and Management",
+          "position": 5,
+          "sourceRow": 254,
+          "subAreas": [],
+          "tags": [
+            "SLA",
+            "Cost Management",
+            "FinOps",
+            "Resource Monitoring",
+            "Cloud Migration Strategies (6 Rs)",
+            "Multi-Cloud",
+            "Hybrid Cloud",
+            "Infrastructure as Code"
+          ]
+        },
+        {
+          "name": "Emerging Cloud Technologies",
+          "position": 6,
+          "sourceRow": 255,
+          "subAreas": [],
+          "tags": [
+            "Edge Computing",
+            "Fog Computing",
+            "AI/ML Cloud Services",
+            "Cloud-Native Applications",
+            "Service Mesh",
+            "GitOps on Cloud",
+            "FinOps",
+            "Sustainability"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "IoT",
+      "position": 31,
+      "areas": [
+        {
+          "name": "IoT Fundamentals",
+          "position": 1,
+          "sourceRow": 256,
+          "subAreas": [],
+          "tags": [
+            "IoT Architecture",
+            "Sensing Layer",
+            "Network Layer",
+            "Application Layer",
+            "IoT Protocols",
+            "M2M Communication",
+            "IoT Reference Models",
+            "IoT Ecosystem"
+          ]
+        },
+        {
+          "name": "Sensors and Actuators",
+          "position": 2,
+          "sourceRow": 257,
+          "subAreas": [],
+          "tags": [
+            "Sensor Types (Temperature, Humidity, Motion, Pressure, Light)",
+            "Actuators (Motors, Relays)",
+            "Analog vs Digital",
+            "ADC/DAC",
+            "Sensor Interfacing",
+            "Signal Conditioning"
+          ]
+        },
+        {
+          "name": "Communication Protocols",
+          "position": 3,
+          "sourceRow": 258,
+          "subAreas": [],
+          "tags": [
+            "MQTT",
+            "CoAP",
+            "HTTP",
+            "WebSocket",
+            "WiFi",
+            "Bluetooth",
+            "Zigbee",
+            "LoRa",
+            "NB-IoT",
+            "5G for IoT",
+            "BLE",
+            "Serial Communication"
+          ]
+        },
+        {
+          "name": "IoT Platforms and Cloud",
+          "position": 4,
+          "sourceRow": 259,
+          "subAreas": [],
+          "tags": [
+            "AWS IoT",
+            "Azure IoT Hub",
+            "Google Cloud IoT",
+            "ThingSpeak",
+            "Edge Computing",
+            "Gateway Devices",
+            "Device Management",
+            "Real-time Processing"
+          ]
+        },
+        {
+          "name": "IoT Security",
+          "position": 5,
+          "sourceRow": 260,
+          "subAreas": [],
+          "tags": [
+            "Security Threats",
+            "Encryption",
+            "Authentication",
+            "Device Security",
+            "Network Security",
+            "Data Privacy",
+            "Blockchain for IoT",
+            "Vulnerability Assessment"
+          ]
+        },
+        {
+          "name": "IoT Applications",
+          "position": 6,
+          "sourceRow": 261,
+          "subAreas": [],
+          "tags": [
+            "Smart Home",
+            "Industrial IoT (IIoT)",
+            "Healthcare IoT",
+            "Smart Cities",
+            "Agriculture IoT",
+            "Wearables",
+            "Fleet Management",
+            "Environmental Monitoring"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Blockchain and Cryptography",
+      "position": 32,
+      "areas": [
+        {
+          "name": "Blockchain Fundamentals",
+          "position": 1,
+          "sourceRow": 262,
+          "subAreas": [],
+          "tags": [
+            "Distributed Ledger",
+            "Decentralization",
+            "Block Structure",
+            "Hash Functions",
+            "Merkle Trees",
+            "P2P Networks",
+            "Blockchain Types (Public, Private, Consortium)",
+            "Immutability"
+          ]
+        },
+        {
+          "name": "Cryptographic Foundations",
+          "position": 2,
+          "sourceRow": 263,
+          "subAreas": [],
+          "tags": [
+            "Symmetric Encryption",
+            "Asymmetric Encryption",
+            "Digital Signatures",
+            "PKI",
+            "SHA-256",
+            "Elliptic Curve Cryptography",
+            "Key Management",
+            "Hashing"
+          ]
+        },
+        {
+          "name": "Consensus Mechanisms",
+          "position": 3,
+          "sourceRow": 264,
+          "subAreas": [],
+          "tags": [
+            "Proof of Work",
+            "Proof of Stake",
+            "DPoS",
+            "PBFT",
+            "Mining",
+            "Validator Selection",
+            "Fork Resolution",
+            "Finality"
+          ]
+        },
+        {
+          "name": "Smart Contracts",
+          "position": 4,
+          "sourceRow": 265,
+          "subAreas": [],
+          "tags": [
+            "Solidity",
+            "Ethereum Virtual Machine",
+            "Gas",
+            "Contract Deployment",
+            "DApps",
+            "Testing Frameworks (Hardhat, Foundry)",
+            "Security Auditing",
+            "Oracles"
+          ]
+        },
+        {
+          "name": "Blockchain Platforms",
+          "position": 5,
+          "sourceRow": 266,
+          "subAreas": [],
+          "tags": [
+            "Bitcoin",
+            "Ethereum",
+            "Hyperledger Fabric",
+            "Solana",
+            "Polygon",
+            "Layer 2 Solutions",
+            "Cross-Chain",
+            "Interoperability"
+          ]
+        },
+        {
+          "name": "Tokens and DeFi",
+          "position": 6,
+          "sourceRow": 267,
+          "subAreas": [],
+          "tags": [
+            "ERC-20",
+            "ERC-721 (NFTs)",
+            "Token Standards",
+            "Wallets",
+            "DeFi Protocols",
+            "DEX",
+            "Lending/Borrowing",
+            "Stablecoins",
+            "Yield Farming"
+          ]
+        },
+        {
+          "name": "Security and Applications",
+          "position": 7,
+          "sourceRow": 268,
+          "subAreas": [],
+          "tags": [
+            "51% Attack",
+            "Sybil Attack",
+            "Double Spending",
+            "Smart Contract Vulnerabilities",
+            "Reentrancy",
+            "Supply Chain",
+            "Identity Management",
+            "Voting Systems",
+            "Healthcare"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Android",
+      "position": 33,
+      "areas": [
+        {
+          "name": "Android Fundamentals",
+          "position": 1,
+          "sourceRow": 269,
+          "subAreas": [],
+          "tags": [
+            "Android Architecture",
+            "Activity Lifecycle",
+            "Android SDK",
+            "Android Studio",
+            "Manifest File",
+            "APK",
+            "App Components",
+            "Permissions",
+            "Android Versions"
+          ]
+        },
+        {
+          "name": "Kotlin Programming",
+          "position": 2,
+          "sourceRow": 270,
+          "subAreas": [],
+          "tags": [
+            "Kotlin Syntax",
+            "Null Safety",
+            "Data Classes",
+            "Sealed Classes",
+            "Extension Functions",
+            "Coroutines",
+            "Lambda",
+            "Collections",
+            "Scope Functions (let, apply, run, with, also)"
+          ]
+        },
+        {
+          "name": "UI Development",
+          "position": 3,
+          "sourceRow": 271,
+          "subAreas": [],
+          "tags": [
+            "XML Layouts",
+            "Views (TextView, EditText, Button, ImageView)",
+            "LinearLayout",
+            "ConstraintLayout",
+            "RecyclerView",
+            "Fragments",
+            "Material Design",
+            "Themes and Styles"
+          ]
+        },
+        {
+          "name": "Jetpack Compose",
+          "position": 4,
+          "sourceRow": 272,
+          "subAreas": [],
+          "tags": [
+            "Composable Functions",
+            "State Management",
+            "Recomposition",
+            "Modifiers",
+            "Layouts (Column, Row, Box)",
+            "LazyColumn",
+            "Navigation",
+            "Material3",
+            "Theming",
+            "Animations"
+          ]
+        },
+        {
+          "name": "Activities Intents and Navigation",
+          "position": 5,
+          "sourceRow": 273,
+          "subAreas": [],
+          "tags": [
+            "Activity Lifecycle",
+            "Explicit/Implicit Intents",
+            "Intent Filters",
+            "Navigation Component",
+            "Deep Links",
+            "Back Stack",
+            "Data Passing",
+            "StartActivityForResult"
+          ]
+        },
+        {
+          "name": "Data Management",
+          "position": 6,
+          "sourceRow": 274,
+          "subAreas": [],
+          "tags": [
+            "Room Database",
+            "SharedPreferences",
+            "DataStore",
+            "Content Providers",
+            "Retrofit (REST API)",
+            "JSON Parsing (Gson, Moshi)",
+            "Repository Pattern",
+            "Offline Support"
+          ]
+        },
+        {
+          "name": "Architecture Components",
+          "position": 7,
+          "sourceRow": 275,
+          "subAreas": [],
+          "tags": [
+            "ViewModel",
+            "LiveData",
+            "StateFlow",
+            "WorkManager",
+            "Hilt (DI)",
+            "Paging Library",
+            "MVVM Pattern",
+            "Clean Architecture",
+            "Data Binding"
+          ]
+        },
+        {
+          "name": "Advanced Features",
+          "position": 8,
+          "sourceRow": 276,
+          "subAreas": [],
+          "tags": [
+            "Services",
+            "Broadcast Receivers",
+            "Notifications",
+            "Background Processing",
+            "Camera",
+            "Location",
+            "Sensors",
+            "Firebase",
+            "Push Notifications",
+            "App Publishing"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "iOS",
+      "position": 34,
+      "areas": [
+        {
+          "name": "Swift Fundamentals",
+          "position": 1,
+          "sourceRow": 277,
+          "subAreas": [],
+          "tags": [
+            "Swift Syntax",
+            "Variables",
+            "Constants",
+            "Data Types",
+            "Optionals",
+            "Functions",
+            "Closures",
+            "Enums",
+            "Structs",
+            "Classes",
+            "Protocols",
+            "Generics",
+            "Error Handling",
+            "ARC"
+          ]
+        },
+        {
+          "name": "Development Environment",
+          "position": 2,
+          "sourceRow": 278,
+          "subAreas": [],
+          "tags": [
+            "Xcode",
+            "Interface Builder",
+            "Simulator",
+            "Asset Catalogs",
+            "Build Settings",
+            "Debugging",
+            "Instruments",
+            "App Store Connect",
+            "Code Signing",
+            "Provisioning"
+          ]
+        },
+        {
+          "name": "UI Development",
+          "position": 3,
+          "sourceRow": 279,
+          "subAreas": [],
+          "tags": [
+            "UIKit",
+            "SwiftUI",
+            "View Controllers",
+            "Auto Layout",
+            "Storyboards",
+            "Navigation Controllers",
+            "Table Views",
+            "Collection Views",
+            "Custom Views",
+            "Animations"
+          ]
+        },
+        {
+          "name": "SwiftUI",
+          "position": 4,
+          "sourceRow": 280,
+          "subAreas": [],
+          "tags": [
+            "Declarative Syntax",
+            "Views",
+            "Modifiers",
+            "State",
+            "Binding",
+            "ObservableObject",
+            "@Published",
+            "NavigationStack",
+            "Lists",
+            "Forms",
+            "Gestures",
+            "Animations",
+            "Environment"
+          ]
+        },
+        {
+          "name": "Core Frameworks",
+          "position": 5,
+          "sourceRow": 281,
+          "subAreas": [],
+          "tags": [
+            "Foundation",
+            "Core Data",
+            "Core Location",
+            "AVFoundation",
+            "Core Animation",
+            "Network Framework",
+            "UserNotifications",
+            "CloudKit",
+            "HealthKit",
+            "MapKit"
+          ]
+        },
+        {
+          "name": "Data and Networking",
+          "position": 6,
+          "sourceRow": 282,
+          "subAreas": [],
+          "tags": [
+            "UserDefaults",
+            "Core Data",
+            "SQLite",
+            "Keychain",
+            "URLSession",
+            "REST APIs",
+            "JSON Parsing (Codable)",
+            "WebSocket",
+            "Offline Support",
+            "CloudKit Sync"
+          ]
+        },
+        {
+          "name": "Architecture and Patterns",
+          "position": 7,
+          "sourceRow": 283,
+          "subAreas": [],
+          "tags": [
+            "MVC",
+            "MVVM",
+            "Coordinator Pattern",
+            "Delegation",
+            "Observer",
+            "Singleton",
+            "SOLID Principles",
+            "Clean Architecture",
+            "Combine Framework"
+          ]
+        },
+        {
+          "name": "Testing and Deployment",
+          "position": 8,
+          "sourceRow": 284,
+          "subAreas": [],
+          "tags": [
+            "XCTest",
+            "Unit Testing",
+            "UI Testing",
+            "TDD",
+            "Performance Testing",
+            "App Store Guidelines",
+            "TestFlight",
+            "Code Signing",
+            "App Distribution"
+          ]
+        },
+        {
+          "name": "Advanced Features",
+          "position": 9,
+          "sourceRow": 285,
+          "subAreas": [],
+          "tags": [
+            "Push Notifications",
+            "Background Processing",
+            "App Extensions",
+            "WidgetKit",
+            "ARKit",
+            "Core ML",
+            "Face ID/Touch ID",
+            "In-App Purchases",
+            "Siri Shortcuts"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Flutter",
+      "position": 35,
+      "areas": [
+        {
+          "name": "Flutter and Dart Fundamentals",
+          "position": 1,
+          "sourceRow": 286,
+          "subAreas": [],
+          "tags": [
+            "Dart Language",
+            "Flutter Architecture",
+            "Widget Tree",
+            "Hot Reload",
+            "Material Design",
+            "Cupertino Design",
+            "Project Structure",
+            "pubspec.yaml",
+            "DevTools"
+          ]
+        },
+        {
+          "name": "Widgets",
+          "position": 2,
+          "sourceRow": 287,
+          "subAreas": [],
+          "tags": [
+            "StatelessWidget",
+            "StatefulWidget",
+            "Widget Lifecycle",
+            "BuildContext",
+            "Container",
+            "Text",
+            "Image",
+            "Icon",
+            "AppBar",
+            "Scaffold",
+            "Custom Widgets"
+          ]
+        },
+        {
+          "name": "Layouts",
+          "position": 3,
+          "sourceRow": 288,
+          "subAreas": [],
+          "tags": [
+            "Row",
+            "Column",
+            "Stack",
+            "Expanded",
+            "Flexible",
+            "Wrap",
+            "ListView",
+            "GridView",
+            "SliverAppBar",
+            "NestedScrollView",
+            "Responsive Layout",
+            "MediaQuery"
+          ]
+        },
+        {
+          "name": "State Management",
+          "position": 4,
+          "sourceRow": 289,
+          "subAreas": [],
+          "tags": [
+            "setState",
+            "Provider",
+            "Riverpod 3.0",
+            "BLoC",
+            "GetX",
+            "InheritedWidget",
+            "ValueNotifier",
+            "StreamBuilder",
+            "FutureBuilder",
+            "State Persistence"
+          ]
+        },
+        {
+          "name": "Navigation and Routing",
+          "position": 5,
+          "sourceRow": 290,
+          "subAreas": [],
+          "tags": [
+            "Navigator",
+            "Named Routes",
+            "GoRouter",
+            "Deep Linking",
+            "Nested Navigation",
+            "Tab Navigation",
+            "Bottom Navigation",
+            "Route Guards",
+            "Path Parameters"
+          ]
+        },
+        {
+          "name": "Data and Networking",
+          "position": 6,
+          "sourceRow": 291,
+          "subAreas": [],
+          "tags": [
+            "HTTP Requests (http, dio)",
+            "REST API",
+            "JSON Parsing",
+            "SharedPreferences",
+            "SQLite (sqflite)",
+            "Hive",
+            "Firebase",
+            "Form Validation",
+            "Data Models"
+          ]
+        },
+        {
+          "name": "Platform Integration",
+          "position": 7,
+          "sourceRow": 292,
+          "subAreas": [],
+          "tags": [
+            "Platform Channels",
+            "Native Code (Swift/Kotlin)",
+            "Camera",
+            "Location",
+            "Push Notifications",
+            "Biometrics",
+            "File System",
+            "Sensors",
+            "Plugin Development"
+          ]
+        },
+        {
+          "name": "Testing and Deployment",
+          "position": 8,
+          "sourceRow": 293,
+          "subAreas": [],
+          "tags": [
+            "Unit Testing",
+            "Widget Testing",
+            "Integration Testing",
+            "Mocking",
+            "Flutter Driver",
+            "App Store Deployment",
+            "Play Store",
+            "CI/CD",
+            "App Signing",
+            "Flavors"
+          ]
+        },
+        {
+          "name": "Animations",
+          "position": 9,
+          "sourceRow": 294,
+          "subAreas": [],
+          "tags": [
+            "Implicit Animations",
+            "Explicit Animations (AnimationController, Tween)",
+            "Hero Animations",
+            "Custom Painter",
+            "Rive",
+            "Lottie",
+            "Page Transitions",
+            "Physics-Based"
+          ]
+        }
+      ]
+    }
+  ]
+}

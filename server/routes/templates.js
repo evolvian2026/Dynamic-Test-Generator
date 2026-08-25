@@ -43,15 +43,16 @@ router.get('/blueprints', requirePermission('templates:read'), (req, res) => {
 });
 
 /**
- * Turns a blueprint — total questions, difficulty mix and topic list — into
- * concrete sections. The question content itself always comes from the bank;
- * nothing is invented (spec §26).
+ * Turns a blueprint — total questions, difficulty mix and taxonomy scope —
+ * into concrete sections. The question content itself always comes from the
+ * bank; nothing is invented (spec §26).
  */
 router.post('/blueprints/expand', requirePermission('tests:write'), validateBody(z.object({
   blueprintId: z.string().optional(),
   totalQuestions: z.coerce.number().int().min(1).max(500).default(50),
   difficultyMix: z.record(z.string(), z.coerce.number()).optional(),
-  topics: z.array(z.string()).default([]),
+  subjects: z.array(z.string()).default([]),
+  areas: z.array(z.string()).default([]),
   questionTypeMix: z.record(z.string(), z.coerce.number()).optional(),
   marksPerQuestion: z.coerce.number().min(0).default(1),
   excludeTags: z.array(z.string()).default([]),

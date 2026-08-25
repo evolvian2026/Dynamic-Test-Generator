@@ -37,7 +37,7 @@ test('login returns a token and the role capability list', async () => {
 
 test('question search is paginated and filtered server-side', async () => {
   const result = await http.post('/api/questions/search', {
-    filter: { question_type: ['MCQ'], topic: ['Arrays'] },
+    filter: { question_type: ['MCQ'], subject: ['Operating System'] },
     page: 1,
     pageSize: 5,
   }, { token: adminToken });
@@ -45,7 +45,8 @@ test('question search is paginated and filtered server-side', async () => {
   assert.equal(result.status, 200);
   assert.equal(result.body.items.length, 5);
   assert.ok(result.body.total > 5);
-  assert.ok(result.body.items.every((q) => q.question_type === 'MCQ' && q.topic === 'Arrays'));
+  assert.ok(result.body.items.every((q) => q.question_type === 'MCQ'));
+  assert.ok(result.body.items.every((q) => q.subjects.includes('Operating System')));
   // Answers are never included in a plain search.
   assert.ok(result.body.items.every((q) => q.answer_text === undefined));
 });
@@ -58,12 +59,34 @@ test('page size is capped so a client cannot pull the whole bank', async () => {
   assert.ok(capped.body.items.length <= 200);
 });
 
-test('subtopics are scoped to the selected topic', async () => {
-  const result = await http.get('/api/questions/facets/subtopic?parent=Arrays', { token: adminToken });
+test('areas cascade from the subject and sub-areas from the area', async () => {
+  const areas = await http.get('/api/questions/facets/area?parent=Operating%20System', { token: adminToken });
+  assert.equal(areas.status, 200);
+  assert.equal(areas.body.length, 8);
+  assert.ok(areas.body.some((r) => r.value === 'Memory Management'));
+  assert.ok(!areas.body.some((r) => r.value === 'Normalization'), 'DBMS areas must not appear under Operating System');
+
+  const subAreas = await http.get('/api/questions/facets/sub_area?parent=Memory%20Management', { token: adminToken });
+  assert.equal(subAreas.status, 200);
+  assert.deepEqual(
+    subAreas.body.map((r) => r.value).sort(),
+    ['Address Spaces and Allocation', 'Virtual Memory and Paging'],
+  );
+});
+
+test('the taxonomy tree is served whole for the browser', async () => {
+  const result = await http.get('/api/questions/taxonomy', { token: adminToken });
   assert.equal(result.status, 200);
-  assert.ok(result.body.length > 0);
-  assert.ok(result.body.some((r) => r.value === 'Two Pointer'));
-  assert.ok(!result.body.some((r) => r.value === 'Shortest Path'), 'graph subtopics must not appear under Arrays');
+  assert.equal(result.body.tree.length, 35);
+  assert.equal(result.body.tree.reduce((a, s) => a + s.areas.length, 0), 293);
+});
+
+test('tag suggestions can be scoped to a taxonomy branch', async () => {
+  const scoped = await http.get('/api/questions/tags?source=taxonomy&area=Memory%20Management', { token: adminToken });
+  assert.equal(scoped.status, 200);
+  const values = scoped.body.map((t) => t.value);
+  assert.ok(values.includes('Demand Paging'));
+  assert.ok(!values.includes('Bankers Algorithm'), 'a sibling area\'s tags must not leak in');
 });
 
 test('live availability responds with counts and remedies', async () => {
@@ -74,7 +97,7 @@ test('live availability responds with counts and remedies', async () => {
   assert.ok(ok.body.available > 5);
 
   const short = await http.post('/api/tests/availability/section', {
-    section: { section_name: 'S', question_count: 99999, marks_per_question: 1, rule: { question_type: ['MCQ'], topic: ['Arrays'], difficulty: ['Hard'] } },
+    section: { section_name: 'S', question_count: 99999, marks_per_question: 1, rule: { question_type: ['MCQ'], subject: ['Operating System'], difficulty: ['Hard'] } },
   }, { token: adminToken });
   assert.equal(short.body.sufficient, false);
   assert.ok(short.body.suggestions.length > 0);
@@ -104,6 +127,12 @@ test('a test is created, stored by QID only, and read back complete', async () =
 
   const qids = test.sections.flatMap((s) => s.questions.map((q) => q.qid));
   assert.equal(new Set(qids).size, qids.length, 'no duplicate QIDs across sections');
+
+  // Each section's questions must genuinely belong to the branch it asked for.
+  const osSection = test.sections.find((s) => s.section_name === 'Operating Systems');
+  assert.ok(osSection.questions.every((e) => e.question.subjects.includes('Operating System')));
+  const dbSection = test.sections.find((s) => s.section_name === 'Databases');
+  assert.ok(dbSection.questions.every((e) => e.question.subjects.includes('DBMS')));
 
   // Each stored row references the bank rather than copying the content.
   for (const section of test.sections) {
@@ -135,7 +164,7 @@ test('regenerate keeps the rules but changes the questions', async () => {
   assert.equal(regenerated.body.summary.totalQuestions, 11);
   assert.deepEqual(
     regenerated.body.sections.map((s) => s.section_name),
-    ['Arrays', 'Coding', 'Trees'],
+    ['Operating Systems', 'Coding', 'Databases'],
   );
 });
 
@@ -147,7 +176,8 @@ test('replace swaps a question for another matching the same rule', async () => 
   const options = await http.get(`/api/tests/${testId}/questions/${entry.id}/replacements?limit=5`, { token: adminToken });
   assert.equal(options.status, 200);
   assert.ok(options.body.candidates.length > 0);
-  assert.ok(options.body.candidates.every((c) => c.question_type === 'MCQ' && c.topic === 'Arrays'));
+  assert.ok(options.body.candidates.every((c) => c.question_type === 'MCQ'));
+  assert.ok(options.body.candidates.every((c) => c.subjects.includes('Operating System')));
 
   const replacement = options.body.candidates[0].qid;
   const replaced = await http.post(`/api/tests/${testId}/questions/${entry.id}/replace`, { qid: replacement }, { token: adminToken });
@@ -202,7 +232,7 @@ test('add, move and remove keep section counts and marks consistent', async () =
   const [arrays, coding] = created.body.sections;
 
   const search = await http.post('/api/questions/search', {
-    filter: { question_type: ['MCQ'], topic: ['Arrays'] }, pageSize: 50,
+    filter: { question_type: ['MCQ'], subject: ['Operating System'] }, pageSize: 50,
   }, { token: adminToken });
   const used = new Set(created.body.sections.flatMap((s) => s.questions.map((q) => q.qid)));
   const spare = search.body.items.find((q) => !used.has(q.qid));
@@ -256,7 +286,7 @@ test('duplicate copies the configuration and the selection', async () => {
 
 test('a manual-mode test uses exactly the supplied QIDs', async () => {
   const search = await http.post('/api/questions/search', {
-    filter: { question_type: ['MCQ'], topic: ['Strings'] }, pageSize: 4,
+    filter: { question_type: ['MCQ'], subject: ['DBMS'] }, pageSize: 4,
   }, { token: adminToken });
   const qids = search.body.items.map((q) => q.qid);
 
@@ -277,6 +307,8 @@ test('blueprints expand into sections with feasibility data', async () => {
   assert.equal(result.body.sections.reduce((a, s) => a + s.question_count, 0), 50);
   assert.equal(result.body.feasibility.length, result.body.sections.length);
   assert.ok(result.body.sections.every((s) => s.distribution?.values));
+  // Blueprints scope by subject now, not by a flat topic list.
+  assert.ok(result.body.sections.every((s) => s.rule.subject?.length));
 });
 
 test('templates round-trip a full builder configuration', async () => {

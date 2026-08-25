@@ -203,7 +203,7 @@ export function findReplacements({ rule, excludeQids = [], limit = 20, seed = nu
 
 /**
  * Produces N selections from the same rules. Each version uses a distinct
- * seed, so the difficulty and topic distributions stay identical while the
+ * seed, so the difficulty and taxonomy distributions stay identical while the
  * QIDs differ. With `uniqueAcrossVersions`, no QID is reused between versions
  * — the engine reports honestly if the bank is too small for that.
  */

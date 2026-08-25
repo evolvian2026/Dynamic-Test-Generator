@@ -4,7 +4,9 @@
   "private": true,
   "description": "Production-ready platform that generates tests dynamically from a QID-based question bank.",
   "type": "module",
-  "engines": { "node": ">=20.11" },
+  "engines": {
+    "node": ">=20.11"
+  },
   "main": "server/index.js",
   "scripts": {
     "start": "node server/index.js",
@@ -18,7 +20,8 @@
     "reset": "node server/db/reset.js",
     "test": "node --test 'tests/*.test.js'",
     "test:watch": "node --test --watch 'tests/*.test.js'",
-    "lint": "node --check server/index.js"
+    "lint": "node --check server/index.js",
+    "taxonomy:import": "node scripts/import-taxonomy.mjs"
   },
   "dependencies": {
     "bcryptjs": "^3.0.2",
@@ -40,6 +43,7 @@
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "react-router-dom": "^7.18.2",
-    "vite": "^8.2.2"
+    "vite": "^8.2.2",
+    "xlsx": "^0.18.5"
   }
 }

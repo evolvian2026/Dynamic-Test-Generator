@@ -25,9 +25,17 @@ export default function Analytics() {
         {data && (
           <>
             <div className="grid grid-4 mb-2">
-              <Stat label="Bank size" value={data.bank.total.toLocaleString()} hint={`${data.bank.totalTopics} topics`} />
+              <Stat
+                label="Bank size"
+                value={data.bank.total.toLocaleString()}
+                hint={`${data.bank.totalSubjects} subjects · ${data.bank.totalAreas} areas`}
+              />
               <Stat label="Tests generated" value={data.tests.total} hint={`${data.tests.published} published`} />
-              <Stat label="Topics covered" value={data.coverage.filter((c) => c.used_questions > 0).length} hint={`of ${data.coverage.length} in the bank`} />
+              <Stat
+                label="Subjects covered"
+                value={data.coverage.filter((c) => c.used_questions > 0).length}
+                hint={`of ${data.coverage.length} in the bank`}
+              />
               <Stat
                 label="Questions used"
                 value={data.coverage.reduce((a, c) => a + c.used_questions, 0).toLocaleString()}
@@ -43,16 +51,16 @@ export default function Analytics() {
                 />
               </Card>
 
-              <Card title="Topic coverage" bodyClass="tight">
+              <Card title="Subject coverage" bodyClass="tight">
                 <div className="table-wrap">
                   <table className="data">
-                    <thead><tr><th>Topic</th><th className="right">In bank</th><th className="right">Used</th><th className="right">Coverage</th></tr></thead>
+                    <thead><tr><th>Subject</th><th className="right">In bank</th><th className="right">Used</th><th className="right">Coverage</th></tr></thead>
                     <tbody>
                       {data.coverage.slice(0, 12).map((row) => {
                         const pct = row.bank_questions ? (row.used_questions / row.bank_questions) * 100 : 0;
                         return (
-                          <tr key={row.topic}>
-                            <td>{row.topic}</td>
+                          <tr key={row.subject}>
+                            <td>{row.subject}</td>
                             <td className="right">{row.bank_questions.toLocaleString()}</td>
                             <td className="right">{row.used_questions.toLocaleString()}</td>
                             <td className="right">
@@ -82,12 +90,12 @@ export default function Analytics() {
                 ) : (
                   <div className="table-wrap">
                     <table className="data">
-                      <thead><tr><th>QID</th><th>Topic</th><th>Difficulty</th><th className="right">Tests</th></tr></thead>
+                      <thead><tr><th>QID</th><th>Area</th><th>Difficulty</th><th className="right">Tests</th></tr></thead>
                       <tbody>
                         {data.mostUsed.map((row) => (
                           <tr key={row.qid}>
                             <td className="mono">{row.qid}</td>
-                            <td>{row.topic}</td>
+                            <td>{row.area || '—'}</td>
                             <td>{row.difficulty}</td>
                             <td className="right">{row.uses}</td>
                           </tr>

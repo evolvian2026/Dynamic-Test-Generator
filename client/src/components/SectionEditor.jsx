@@ -54,6 +54,20 @@ export default function SectionEditor({ meta, section, index, onChange, onRemove
     return out;
   })();
 
+  // Which buckets a distribution offers depends on what it splits by. For the
+  // taxonomy levels the choices are the section's own selection, because
+  // distributing across all 293 areas would be meaningless.
+  const distributionKeys = (() => {
+    const field = distribution?.field;
+    if (field === 'question_type') return meta?.questionTypes || [];
+    if (field === 'subject') {
+      return section.rule?.subject?.length
+        ? section.rule.subject
+        : (meta?.subjects || []).slice(0, 12).map((s) => s.value);
+    }
+    if (field === 'area') return section.rule?.area || [];
+    return DIFFICULTIES;
+  })();
   return (
     <div className="section-card">
       <div className="section-head">
@@ -166,7 +180,8 @@ export default function SectionEditor({ meta, section, index, onChange, onRemove
                     >
                       <option value="difficulty">Difficulty</option>
                       <option value="question_type">Question Type</option>
-                      <option value="topic">Topic</option>
+                      <option value="subject">Subject</option>
+                      <option value="area">Area / Topic</option>
                     </select>
                   </div>
                   <div>
@@ -181,12 +196,7 @@ export default function SectionEditor({ meta, section, index, onChange, onRemove
                   </div>
                 </div>
 
-                {(distribution.field === 'difficulty'
-                  ? DIFFICULTIES
-                  : distribution.field === 'question_type'
-                    ? meta?.questionTypes || []
-                    : (meta?.topics || []).map((t) => t.value)
-                ).map((key) => (
+                {distributionKeys.map((key) => (
                   <div className="form-row mb-1" key={key}>
                     <div className="flex-gap">
                       <span style={{ minWidth: 130 }}>{key}</span>

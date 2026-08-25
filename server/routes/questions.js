@@ -6,8 +6,9 @@ import { requireAuth, requirePermission } from '../middleware/auth.js';
 import { validateBody } from '../middleware/validate.js';
 import {
   listMatching, countMatching, getQuestionByQid, getQuestionsByQids,
-  bankStatistics, getFacet, getSubtopics, searchTags,
+  bankStatistics, getFacet, getFacetAcrossParents, getAreas, getSubAreas, searchTags,
 } from '../core/questions.js';
+import { getTaxonomyTree, tagsFor } from '../core/taxonomy.js';
 import { listFields, primaryFields, OPERATORS, KNOWN_QUESTION_TYPES, DIFFICULTY_LEVELS, QUESTION_STATUSES } from '../core/metadata.js';
 import { notFound } from '../middleware/errors.js';
 
@@ -29,29 +30,62 @@ const searchSchema = z.object({
 
 /** Field registry + facet vocabularies that drive the filter builder UI. */
 router.get('/metadata', requirePermission('questions:read'), (req, res) => {
+  const seenTypes = getFacet('question_type').map((r) => r.value);
   res.json({
     fields: listFields(),
     primaryFields: primaryFields().map((f) => f.key),
     operators: OPERATORS,
-    questionTypes: getFacet('question_type').map((r) => r.value).length
-      ? getFacet('question_type').map((r) => r.value)
-      : KNOWN_QUESTION_TYPES,
+    questionTypes: seenTypes.length ? seenTypes : KNOWN_QUESTION_TYPES,
     difficulties: DIFFICULTY_LEVELS,
     statuses: QUESTION_STATUSES,
-    topics: getFacet('topic'),
+    subjects: getFacet('subject'),
     tags: getFacet('tag').slice(0, 100),
   });
 });
 
-router.get('/facets/:dimension', requirePermission('questions:read'), (req, res) => {
-  const { dimension } = req.params;
-  const parent = String(req.query.parent ?? '');
-  if (dimension === 'subtopic') return res.json(getSubtopics(parent || null));
-  res.json(getFacet(dimension, parent));
+/** The whole Subject > Area > Sub-Area tree, for the taxonomy browser. */
+router.get('/taxonomy', requirePermission('questions:read'), (req, res) => {
+  res.json({
+    tree: getTaxonomyTree({ withCounts: req.query.withCounts !== 'false' }),
+  });
 });
 
+/**
+ * Facet values for one dimension.
+ *
+ * The taxonomy levels cascade: `area` is scoped by the selected subject(s) and
+ * `sub_area` by the selected area(s), passed as a comma-separated `parent`.
+ */
+router.get('/facets/:dimension', requirePermission('questions:read'), (req, res) => {
+  const { dimension } = req.params;
+  const raw = String(req.query.parent ?? '');
+  const parents = raw ? raw.split(',').map((v) => v.trim()).filter(Boolean) : [];
+
+  if (dimension === 'area') return res.json(getAreas(parents));
+  if (dimension === 'sub_area') return res.json(getSubAreas(parents));
+  if (dimension === 'subject') return res.json(getFacet('subject'));
+  // Everything else is a flat, parent-less dimension.
+  return res.json(raw ? getFacet(dimension, raw) : getFacetAcrossParents(dimension));
+});
+
+/**
+ * Tag suggestions.
+ *
+ * `source=taxonomy` returns the vocabulary the taxonomy defines for the given
+ * branch — the tags a question in that area is *expected* to carry. The default
+ * returns tags actually present in the bank, with usage counts.
+ */
 router.get('/tags', requirePermission('questions:read'), (req, res) => {
-  res.json(searchTags(String(req.query.q ?? ''), Math.min(Number(req.query.limit) || 30, 100)));
+  const search = String(req.query.q ?? '');
+  const limit = Math.min(Number(req.query.limit) || 30, 200);
+  const listOf = (value) => (value ? String(value).split(',').map((v) => v.trim()).filter(Boolean) : []);
+  const subjects = listOf(req.query.subject);
+  const areas = listOf(req.query.area);
+
+  if (req.query.source === 'taxonomy' || subjects.length || areas.length) {
+    return res.json(tagsFor({ subjects, areas, search, limit }));
+  }
+  return res.json(searchTags(search, limit));
 });
 
 router.get('/statistics', requirePermission('questions:read'), (req, res) => {

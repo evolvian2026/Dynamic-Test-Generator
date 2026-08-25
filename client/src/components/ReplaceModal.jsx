@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import api from '../lib/api.js';
 import { useToast } from './Toast.jsx';
-import { Modal, Badge, DifficultyBadge, Spinner, Alert, EmptyState } from './ui.jsx';
+import { Modal, Badge, DifficultyBadge, Spinner, Alert, EmptyState, TaxonomyBadges } from './ui.jsx';
 
 export default function ReplaceModal({ testId, entry, onClose, onReplaced }) {
   const toast = useToast();
@@ -65,7 +65,7 @@ export default function ReplaceModal({ testId, entry, onClose, onReplaced }) {
               <>
                 <Badge>{entry.question.question_type}</Badge>
                 <DifficultyBadge level={entry.question.difficulty} />
-                <Badge>{entry.question.topic}</Badge>
+                <TaxonomyBadges question={entry.question} />
               </>
             )}
           </div>
@@ -87,8 +87,7 @@ export default function ReplaceModal({ testId, entry, onClose, onReplaced }) {
               <span className="mono small">{candidate.qid}</span>
               <Badge>{candidate.question_type}</Badge>
               <DifficultyBadge level={candidate.difficulty} />
-              <Badge>{candidate.topic}</Badge>
-              {candidate.subtopic && <span className="faint small">{candidate.subtopic}</span>}
+              <TaxonomyBadges question={candidate} />
               <span className="faint small">{candidate.marks} marks</span>
             </div>
           </div>

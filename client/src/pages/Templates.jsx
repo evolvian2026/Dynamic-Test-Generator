@@ -1,6 +1,6 @@
 /** Test templates (spec §16) and the smart blueprint generator (spec §26). */
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { TopBar } from '../App.jsx';
 import api from '../lib/api.js';
@@ -44,7 +44,7 @@ export default function Templates() {
       <div className="page">
         <Alert variant="info" title="Blueprints never invent questions">
           A blueprint only describes the shape of a test — how many questions, which difficulty mix,
-          which topics. Every question is still drawn from your existing bank by QID.
+          which subjects and areas. Every question is still drawn from your existing bank by QID.
         </Alert>
 
         {loading && !templates && <Spinner label="Loading templates…" />}
@@ -130,8 +130,13 @@ export default function Templates() {
                     ))}
                   </div>
                   <div className="flex-gap mb-2">
-                    {blueprint.topics.slice(0, 5).map((topic) => <Badge key={topic}>{topic}</Badge>)}
-                    {blueprint.topics.length > 5 && <span className="faint small">+{blueprint.topics.length - 5} more</span>}
+                    {(blueprint.subjects || []).map((subject) => (
+                      <Badge key={subject} variant="brand">{subject}</Badge>
+                    ))}
+                    {(blueprint.areas || []).slice(0, 4).map((area) => <Badge key={area}>{area}</Badge>)}
+                    {(blueprint.areas || []).length > 4 && (
+                      <span className="faint small">+{blueprint.areas.length - 4} more areas</span>
+                    )}
                   </div>
                   {can('tests:write') && (
                     <Link className="btn btn-sm btn-block" to={`/create?blueprint=${blueprint.id}`}>
@@ -159,7 +164,9 @@ function SmartGeneratorModal({ onClose, onApply }) {
   const [blueprintId, setBlueprintId] = useState('');
   const [totalQuestions, setTotalQuestions] = useState(50);
   const [mix, setMix] = useState({ Easy: 20, Medium: 50, Hard: 30 });
-  const [topics, setTopics] = useState([]);
+  const [subjects, setSubjects] = useState([]);
+  const [areas, setAreas] = useState([]);
+  const [areaOptions, setAreaOptions] = useState([]);
   const [result, setResult] = useState(null);
   const [busy, setBusy] = useState(false);
 
@@ -169,7 +176,8 @@ function SmartGeneratorModal({ onClose, onApply }) {
     if (blueprint) {
       setTotalQuestions(blueprint.totalQuestions);
       setMix(blueprint.difficultyMix);
-      setTopics(blueprint.topics);
+      setSubjects(blueprint.subjects || []);
+      setAreas(blueprint.areas || []);
     }
   };
 
@@ -180,7 +188,8 @@ function SmartGeneratorModal({ onClose, onApply }) {
         blueprintId: blueprintId || undefined,
         totalQuestions,
         difficultyMix: mix,
-        topics,
+        subjects,
+        areas,
       });
       setResult(data);
     } catch (error) {
@@ -189,6 +198,15 @@ function SmartGeneratorModal({ onClose, onApply }) {
       setBusy(false);
     }
   };
+
+  useEffect(() => {
+    let cancelled = false;
+    if (!subjects.length) { setAreaOptions([]); return () => { cancelled = true; }; }
+    api.questions.facet('area', subjects)
+      .then((rows) => !cancelled && setAreaOptions(rows))
+      .catch(() => !cancelled && setAreaOptions([]));
+    return () => { cancelled = true; };
+  }, [subjects.join('|')]);
 
   const mixTotal = Object.values(mix).reduce((a, v) => a + Number(v || 0), 0);
 
@@ -249,22 +267,51 @@ function SmartGeneratorModal({ onClose, onApply }) {
       </div>
 
       <div className="field">
-        <span className="field-label">Topics</span>
+        <span className="field-label">Subjects</span>
         <div className="chip-select">
-          {(meta?.topics || []).slice(0, 20).map((topic) => (
+          {(meta?.subjects || []).map((subject) => (
             <button
-              key={topic.value}
+              key={subject.value}
               type="button"
-              className={`chip${topics.includes(topic.value) ? ' selected' : ''}`}
-              onClick={() => setTopics(topics.includes(topic.value)
-                ? topics.filter((t) => t !== topic.value)
-                : [...topics, topic.value])}
+              className={`chip${subjects.includes(subject.value) ? ' selected' : ''}`}
+              onClick={() => {
+                const next = subjects.includes(subject.value)
+                  ? subjects.filter((t) => t !== subject.value)
+                  : [...subjects, subject.value];
+                setSubjects(next);
+                // Areas belong to subjects, so drop any that no longer apply.
+                setAreas((current) => current.filter((a) =>
+                  areaOptions.some((o) => o.value === a && next.includes(o.subject))));
+              }}
             >
-              {topic.value}<span className="chip-count">{topic.count.toLocaleString()}</span>
+              {subject.value}<span className="chip-count">{subject.count.toLocaleString()}</span>
             </button>
           ))}
         </div>
       </div>
+
+      {subjects.length > 0 && (
+        <div className="field">
+          <span className="field-label">
+            Areas <span className="faint">· optional, leave empty for the whole subject</span>
+          </span>
+          <div className="chip-select">
+            {areaOptions.slice(0, 40).map((area) => (
+              <button
+                key={`${area.subject}-${area.value}`}
+                type="button"
+                className={`chip${areas.includes(area.value) ? ' selected' : ''}`}
+                title={`${area.subject} › ${area.value}`}
+                onClick={() => setAreas(areas.includes(area.value)
+                  ? areas.filter((a) => a !== area.value)
+                  : [...areas, area.value])}
+              >
+                {area.value}<span className="chip-count">{area.count.toLocaleString()}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {result && (
         <>

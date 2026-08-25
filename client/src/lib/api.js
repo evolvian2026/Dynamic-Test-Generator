@@ -59,8 +59,19 @@ export const api = {
   questions: {
     metadata: () => get('/questions/metadata'),
     statistics: () => get('/questions/statistics'),
-    facet: (dimension, parent = '') => get(`/questions/facets/${dimension}?parent=${encodeURIComponent(parent)}`),
-    tags: (q = '') => get(`/questions/tags?q=${encodeURIComponent(q)}`),
+    taxonomy: (withCounts = true) => get(`/questions/taxonomy?withCounts=${withCounts}`),
+    /** `parent` may be a list — areas cascade from subjects, sub-areas from areas. */
+    facet: (dimension, parent = '') => {
+      const value = Array.isArray(parent) ? parent.join(',') : parent;
+      return get(`/questions/facets/${dimension}?parent=${encodeURIComponent(value)}`);
+    },
+    tags: (q = '', { subjects = [], areas = [], source } = {}) => {
+      const params = new URLSearchParams({ q });
+      if (subjects.length) params.set('subject', subjects.join(','));
+      if (areas.length) params.set('area', areas.join(','));
+      if (source) params.set('source', source);
+      return get(`/questions/tags?${params}`);
+    },
     search: (payload, signal) => post('/questions/search', payload, { signal }),
     count: (payload, signal) => post('/questions/count', payload, { signal }),
     lookup: (qids, withAnswers = false) => post('/questions/lookup', { qids, withAnswers }),

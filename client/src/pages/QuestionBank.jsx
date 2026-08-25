@@ -9,6 +9,7 @@ import RuleBuilder from '../components/RuleBuilder.jsx';
 import QuestionModal from '../components/QuestionModal.jsx';
 import {
   Card, Stat, Badge, DifficultyBadge, BarChart, Pagination, Spinner, EmptyState, ChipSelect,
+  TaxonomyPath,
 } from '../components/ui.jsx';
 
 export default function QuestionBank() {
@@ -69,7 +70,11 @@ export default function QuestionBank() {
       <div className="page">
         {stats && (
           <div className="grid grid-4 mb-2">
-            <Stat label="Total questions" value={stats.total.toLocaleString()} hint={`${stats.totalTopics} topics`} />
+            <Stat
+              label="Total questions"
+              value={stats.total.toLocaleString()}
+              hint={`${stats.totalSubjects} subjects · ${stats.totalAreas} areas`}
+            />
             <Stat label="MCQ" value={(stats.byType.MCQ || 0).toLocaleString()} hint={`Multiple Select: ${(stats.byType['Multiple Select'] || 0).toLocaleString()}`} />
             <Stat label="Coding" value={(stats.byType.Coding || 0).toLocaleString()} hint={`Fill in the Blank: ${(stats.byType['Fill in the Blank'] || 0).toLocaleString()}`} />
             <Stat
@@ -102,9 +107,15 @@ export default function QuestionBank() {
             </Card>
 
             {stats && (
-              <Card title="Topic distribution" className="mt-2">
+              <Card title="Subject distribution" className="mt-2">
                 <BarChart
-                  data={stats.byTopic.slice(0, 12).map((t) => ({ label: t.value, value: t.count }))}
+                  data={stats.bySubject.slice(0, 12).map((t) => ({ label: t.value, value: t.count }))}
+                  formatValue={(v) => v.toLocaleString()}
+                />
+                <div className="divider" />
+                <span className="field-label">Top areas</span>
+                <BarChart
+                  data={stats.byArea.slice(0, 10).map((t) => ({ label: t.value, value: t.count }))}
                   formatValue={(v) => v.toLocaleString()}
                 />
                 <div className="divider" />
@@ -146,8 +157,8 @@ export default function QuestionBank() {
                         <th>Question</th>
                         <th className="sortable" onClick={() => sortBy('question_type')}>Type{arrow('question_type')}</th>
                         <th className="sortable" onClick={() => sortBy('difficulty')}>Level{arrow('difficulty')}</th>
-                        <th className="sortable" onClick={() => sortBy('topic')}>Topic{arrow('topic')}</th>
-                        <th>Subtopic</th>
+                        <th>Subject</th>
+                        <th>Area / Sub-Area</th>
                         <th className="sortable right" onClick={() => sortBy('marks')}>Marks{arrow('marks')}</th>
                         <th className="sortable" onClick={() => sortBy('status')}>Status{arrow('status')}</th>
                       </tr>
@@ -170,8 +181,12 @@ export default function QuestionBank() {
                           </td>
                           <td className="nowrap small">{question.question_type}</td>
                           <td><DifficultyBadge level={question.difficulty} /></td>
-                          <td className="nowrap small">{question.topic}</td>
-                          <td className="nowrap small faint">{question.subtopic || '—'}</td>
+                          <td className="small">
+                            {question.subjects?.length
+                              ? question.subjects.join(', ')
+                              : <span className="faint">unclassified</span>}
+                          </td>
+                          <td className="small"><TaxonomyPath question={question} /></td>
                           <td className="right">{question.marks}</td>
                           <td>
                             <Badge variant={question.status === 'active' ? 'success' : undefined}>{question.status}</Badge>

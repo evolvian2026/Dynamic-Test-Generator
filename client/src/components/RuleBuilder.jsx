@@ -177,7 +177,7 @@ export default function RuleBuilder({ meta, value, onChange }) {
 
   const facets = {
     question_type: (meta.questionTypes || []).map((v) => ({ value: v })),
-    topic: meta.topics || [],
+    subject: meta.subjects || [],
     difficulty: (meta.difficulties || []).map((v) => ({ value: v })),
     status: (meta.statuses || []).map((v) => ({ value: v })),
     tags: meta.tags || [],

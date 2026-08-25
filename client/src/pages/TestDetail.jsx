@@ -16,6 +16,7 @@ import ExplainModal from '../components/ExplainModal.jsx';
 import AddQuestionsModal from '../components/AddQuestionsModal.jsx';
 import {
   Card, Stat, Badge, DifficultyBadge, DistributionBar, Alert, Spinner, Modal, statusVariant,
+  TaxonomyBadges,
 } from '../components/ui.jsx';
 
 export default function TestDetail() {
@@ -185,7 +186,7 @@ export default function TestDetail() {
                         <>
                           <Badge>{entry.question.question_type}</Badge>
                           <DifficultyBadge level={entry.question.difficulty} />
-                          <Badge>{entry.question.topic}</Badge>
+                          <TaxonomyBadges question={entry.question} />
                         </>
                       )}
                       <span className="faint small">{entry.marks} mark{entry.marks === 1 ? '' : 's'}</span>
@@ -344,8 +345,8 @@ function VersionsModal({ test, onClose, onCreated }) {
       {!created ? (
         <>
           <p className="muted">
-            Each version follows the same selection rules and keeps the same difficulty and topic
-            distribution, but draws different QIDs.
+            Each version follows the same selection rules and keeps the same difficulty and
+            taxonomy distribution, but draws different QIDs.
           </p>
           <div className="field">
             <label htmlFor="version-count">Number of versions</label>

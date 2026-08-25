@@ -239,12 +239,15 @@ function summarize(test, sections) {
   const questions = sections.flatMap((s) => s.questions);
   const byDifficulty = {};
   const byType = {};
-  const byTopic = {};
+  const bySubject = {};
+  const byArea = {};
   for (const entry of questions) {
     const q = entry.question || {};
     byDifficulty[q.difficulty] = (byDifficulty[q.difficulty] || 0) + 1;
     byType[q.question_type] = (byType[q.question_type] || 0) + 1;
-    byTopic[q.topic] = (byTopic[q.topic] || 0) + 1;
+    // A multi-mapped question contributes to each branch it belongs to.
+    for (const subject of q.subjects || []) bySubject[subject] = (bySubject[subject] || 0) + 1;
+    for (const area of q.areas || []) byArea[area] = (byArea[area] || 0) + 1;
   }
   return {
     totalQuestions: questions.length,
@@ -256,7 +259,8 @@ function summarize(test, sections) {
     ),
     byDifficulty,
     byType,
-    byTopic,
+    bySubject,
+    byArea,
     sections: sections.map((s) => ({
       id: s.id,
       name: s.section_name,

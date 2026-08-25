@@ -154,7 +154,9 @@ function buildSuggestions(section, bucketResults, feasibleTotal, excludeQids) {
     }
   };
 
-  if (rule.subtopic?.length) probe({ subtopic: [] }, 'remove_subtopic', 'Remove the subtopic filter');
+  // Widen the taxonomy from the narrowest level upwards.
+  if (rule.sub_area?.length) probe({ sub_area: [] }, 'remove_sub_area', 'Remove the sub-area filter');
+  if (rule.area?.length) probe({ area: [], sub_area: [] }, 'remove_area', 'Widen to the whole subject');
   if (rule.difficulty?.length && rule.difficulty.length < 3) {
     probe({ difficulty: ['Easy', 'Medium', 'Hard'] }, 'relax_difficulty', 'Allow all difficulty levels');
   }

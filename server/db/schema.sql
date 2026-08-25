@@ -31,8 +31,8 @@ CREATE TABLE IF NOT EXISTS questions (
   qid              TEXT NOT NULL UNIQUE,
   question_type    TEXT NOT NULL,
   question_text    TEXT NOT NULL,
-  topic            TEXT NOT NULL,
-  subtopic         TEXT,
+  -- Subject / Area / Sub-Area classification is many-to-many and lives in
+  -- `question_taxonomy`; a QID may belong to several branches at once.
   difficulty       TEXT NOT NULL,
   marks            REAL NOT NULL DEFAULT 1,
   expected_seconds INTEGER NOT NULL DEFAULT 60,
@@ -45,11 +45,9 @@ CREATE TABLE IF NOT EXISTS questions (
 );
 
 -- Composite index ordered from most to least selective for the common
--- "type + topic + difficulty" section rule; SQLite can use any left prefix.
+-- "type + difficulty" section rule; SQLite can use any left prefix.
 CREATE INDEX IF NOT EXISTS idx_questions_selection
-  ON questions (status, question_type, topic, difficulty, subtopic, id);
-CREATE INDEX IF NOT EXISTS idx_questions_topic_sub
-  ON questions (topic, subtopic, status, id);
+  ON questions (status, question_type, difficulty, id);
 CREATE INDEX IF NOT EXISTS idx_questions_difficulty
   ON questions (difficulty, status, id);
 CREATE INDEX IF NOT EXISTS idx_questions_type
@@ -87,6 +85,78 @@ CREATE TABLE IF NOT EXISTS question_attributes (
 CREATE INDEX IF NOT EXISTS idx_attr_lookup ON question_attributes (attr_key, attr_value, question_id);
 CREATE INDEX IF NOT EXISTS idx_attr_numeric ON question_attributes (attr_key, num_value, question_id);
 
+-- ------------------------------ taxonomy -----------------------------------
+-- Four-level classification loaded from the taxonomy workbook:
+--
+--     Subject  ->  Area (Topic)  ->  Sub-Area (Sub-Topic, optional)  ->  Tags
+--
+-- A QID maps to one or more branches of this tree (`question_taxonomy`), so a
+-- question that legitimately belongs to two subjects is represented honestly
+-- rather than being forced into a single slot. Tags remain optional.
+
+CREATE TABLE IF NOT EXISTS taxonomy_subjects (
+  id       INTEGER PRIMARY KEY AUTOINCREMENT,
+  name     TEXT NOT NULL UNIQUE,
+  position INTEGER NOT NULL DEFAULT 0
+);
+
+CREATE TABLE IF NOT EXISTS taxonomy_areas (
+  id         INTEGER PRIMARY KEY AUTOINCREMENT,
+  subject_id INTEGER NOT NULL REFERENCES taxonomy_subjects (id) ON DELETE CASCADE,
+  name       TEXT NOT NULL,
+  position   INTEGER NOT NULL DEFAULT 0,
+  UNIQUE (subject_id, name)
+);
+CREATE INDEX IF NOT EXISTS idx_areas_subject ON taxonomy_areas (subject_id, position);
+
+CREATE TABLE IF NOT EXISTS taxonomy_sub_areas (
+  id       INTEGER PRIMARY KEY AUTOINCREMENT,
+  area_id  INTEGER NOT NULL REFERENCES taxonomy_areas (id) ON DELETE CASCADE,
+  name     TEXT NOT NULL,
+  position INTEGER NOT NULL DEFAULT 0,
+  UNIQUE (area_id, name)
+);
+CREATE INDEX IF NOT EXISTS idx_sub_areas_area ON taxonomy_sub_areas (area_id, position);
+
+-- Tag vocabulary. A tag name is global (the same tag appears under many areas),
+-- and `taxonomy_area_tags` records which areas suggest it, so the tag picker can
+-- narrow itself to the branch the user is filtering on.
+CREATE TABLE IF NOT EXISTS taxonomy_tags (
+  id   INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL UNIQUE
+);
+
+CREATE TABLE IF NOT EXISTS taxonomy_area_tags (
+  area_id  INTEGER NOT NULL REFERENCES taxonomy_areas (id) ON DELETE CASCADE,
+  tag_id   INTEGER NOT NULL REFERENCES taxonomy_tags (id) ON DELETE CASCADE,
+  position INTEGER NOT NULL DEFAULT 0,
+  PRIMARY KEY (area_id, tag_id)
+) WITHOUT ROWID;
+CREATE INDEX IF NOT EXISTS idx_area_tags_tag ON taxonomy_area_tags (tag_id, area_id);
+
+-- QID -> taxonomy mapping (many-to-many).
+--
+-- subject_id and area_id are denormalised onto every row so that filtering by
+-- any level is a single indexed EXISTS probe rather than a join up the tree.
+-- sub_area_id is NULL when the area has no sub-areas, which is the common case
+-- (284 of the 293 areas in the supplied taxonomy).
+CREATE TABLE IF NOT EXISTS question_taxonomy (
+  id          INTEGER PRIMARY KEY AUTOINCREMENT,
+  question_id INTEGER NOT NULL REFERENCES questions (id) ON DELETE CASCADE,
+  subject_id  INTEGER NOT NULL REFERENCES taxonomy_subjects (id) ON DELETE CASCADE,
+  area_id     INTEGER NOT NULL REFERENCES taxonomy_areas (id) ON DELETE CASCADE,
+  sub_area_id INTEGER REFERENCES taxonomy_sub_areas (id) ON DELETE CASCADE,
+  -- Exactly one mapping per question is primary; it is what single-value
+  -- displays (table columns, export rows) show.
+  is_primary  INTEGER NOT NULL DEFAULT 0
+);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_qtax_unique
+  ON question_taxonomy (question_id, area_id, COALESCE(sub_area_id, 0));
+CREATE INDEX IF NOT EXISTS idx_qtax_subject ON question_taxonomy (subject_id, question_id);
+CREATE INDEX IF NOT EXISTS idx_qtax_area ON question_taxonomy (area_id, question_id);
+CREATE INDEX IF NOT EXISTS idx_qtax_sub_area ON question_taxonomy (sub_area_id, question_id);
+CREATE INDEX IF NOT EXISTS idx_qtax_question ON question_taxonomy (question_id, is_primary DESC);
+
 -- Full-text search over question text (external-content FTS5).
 CREATE VIRTUAL TABLE IF NOT EXISTS questions_fts USING fts5 (
   question_text,
@@ -121,10 +191,6 @@ CREATE INDEX IF NOT EXISTS idx_facet_dimension ON facet_counts (dimension, count
 CREATE TRIGGER IF NOT EXISTS questions_facets_ai AFTER INSERT ON questions BEGIN
   INSERT INTO facet_counts (dimension, parent, value, count) VALUES ('question_type', '', new.question_type, 1)
     ON CONFLICT (dimension, parent, value) DO UPDATE SET count = count + 1;
-  INSERT INTO facet_counts (dimension, parent, value, count) VALUES ('topic', '', new.topic, 1)
-    ON CONFLICT (dimension, parent, value) DO UPDATE SET count = count + 1;
-  INSERT INTO facet_counts (dimension, parent, value, count) VALUES ('subtopic', new.topic, COALESCE(new.subtopic, ''), 1)
-    ON CONFLICT (dimension, parent, value) DO UPDATE SET count = count + 1;
   INSERT INTO facet_counts (dimension, parent, value, count) VALUES ('difficulty', '', new.difficulty, 1)
     ON CONFLICT (dimension, parent, value) DO UPDATE SET count = count + 1;
   INSERT INTO facet_counts (dimension, parent, value, count) VALUES ('status', '', new.status, 1)
@@ -133,8 +199,6 @@ END;
 
 CREATE TRIGGER IF NOT EXISTS questions_facets_ad AFTER DELETE ON questions BEGIN
   UPDATE facet_counts SET count = count - 1 WHERE dimension = 'question_type' AND parent = '' AND value = old.question_type;
-  UPDATE facet_counts SET count = count - 1 WHERE dimension = 'topic' AND parent = '' AND value = old.topic;
-  UPDATE facet_counts SET count = count - 1 WHERE dimension = 'subtopic' AND parent = old.topic AND value = COALESCE(old.subtopic, '');
   UPDATE facet_counts SET count = count - 1 WHERE dimension = 'difficulty' AND parent = '' AND value = old.difficulty;
   UPDATE facet_counts SET count = count - 1 WHERE dimension = 'status' AND parent = '' AND value = old.status;
   DELETE FROM facet_counts WHERE count <= 0;
@@ -142,20 +206,49 @@ END;
 
 CREATE TRIGGER IF NOT EXISTS questions_facets_au AFTER UPDATE ON questions BEGIN
   UPDATE facet_counts SET count = count - 1 WHERE dimension = 'question_type' AND parent = '' AND value = old.question_type;
-  UPDATE facet_counts SET count = count - 1 WHERE dimension = 'topic' AND parent = '' AND value = old.topic;
-  UPDATE facet_counts SET count = count - 1 WHERE dimension = 'subtopic' AND parent = old.topic AND value = COALESCE(old.subtopic, '');
   UPDATE facet_counts SET count = count - 1 WHERE dimension = 'difficulty' AND parent = '' AND value = old.difficulty;
   UPDATE facet_counts SET count = count - 1 WHERE dimension = 'status' AND parent = '' AND value = old.status;
   INSERT INTO facet_counts (dimension, parent, value, count) VALUES ('question_type', '', new.question_type, 1)
-    ON CONFLICT (dimension, parent, value) DO UPDATE SET count = count + 1;
-  INSERT INTO facet_counts (dimension, parent, value, count) VALUES ('topic', '', new.topic, 1)
-    ON CONFLICT (dimension, parent, value) DO UPDATE SET count = count + 1;
-  INSERT INTO facet_counts (dimension, parent, value, count) VALUES ('subtopic', new.topic, COALESCE(new.subtopic, ''), 1)
     ON CONFLICT (dimension, parent, value) DO UPDATE SET count = count + 1;
   INSERT INTO facet_counts (dimension, parent, value, count) VALUES ('difficulty', '', new.difficulty, 1)
     ON CONFLICT (dimension, parent, value) DO UPDATE SET count = count + 1;
   INSERT INTO facet_counts (dimension, parent, value, count) VALUES ('status', '', new.status, 1)
     ON CONFLICT (dimension, parent, value) DO UPDATE SET count = count + 1;
+  DELETE FROM facet_counts WHERE count <= 0;
+END;
+
+-- Taxonomy facet counters. Driven by the mapping table, so a question counted
+-- under two subjects contributes to both — which is what the bank dashboard and
+-- the cascading pickers should show.
+CREATE TRIGGER IF NOT EXISTS qtax_facets_ai AFTER INSERT ON question_taxonomy BEGIN
+  INSERT INTO facet_counts (dimension, parent, value, count)
+    VALUES ('subject', '', (SELECT name FROM taxonomy_subjects WHERE id = new.subject_id), 1)
+    ON CONFLICT (dimension, parent, value) DO UPDATE SET count = count + 1;
+  INSERT INTO facet_counts (dimension, parent, value, count)
+    VALUES ('area',
+            (SELECT name FROM taxonomy_subjects WHERE id = new.subject_id),
+            (SELECT name FROM taxonomy_areas WHERE id = new.area_id), 1)
+    ON CONFLICT (dimension, parent, value) DO UPDATE SET count = count + 1;
+  INSERT INTO facet_counts (dimension, parent, value, count)
+    SELECT 'sub_area',
+           (SELECT name FROM taxonomy_areas WHERE id = new.area_id),
+           (SELECT name FROM taxonomy_sub_areas WHERE id = new.sub_area_id), 1
+     WHERE new.sub_area_id IS NOT NULL
+    ON CONFLICT (dimension, parent, value) DO UPDATE SET count = count + 1;
+END;
+
+CREATE TRIGGER IF NOT EXISTS qtax_facets_ad AFTER DELETE ON question_taxonomy BEGIN
+  UPDATE facet_counts SET count = count - 1
+   WHERE dimension = 'subject' AND parent = ''
+     AND value = (SELECT name FROM taxonomy_subjects WHERE id = old.subject_id);
+  UPDATE facet_counts SET count = count - 1
+   WHERE dimension = 'area'
+     AND parent = (SELECT name FROM taxonomy_subjects WHERE id = old.subject_id)
+     AND value = (SELECT name FROM taxonomy_areas WHERE id = old.area_id);
+  UPDATE facet_counts SET count = count - 1
+   WHERE old.sub_area_id IS NOT NULL AND dimension = 'sub_area'
+     AND parent = (SELECT name FROM taxonomy_areas WHERE id = old.area_id)
+     AND value = (SELECT name FROM taxonomy_sub_areas WHERE id = old.sub_area_id);
   DELETE FROM facet_counts WHERE count <= 0;
 END;
 

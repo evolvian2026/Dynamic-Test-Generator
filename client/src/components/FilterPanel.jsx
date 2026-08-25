@@ -1,63 +1,97 @@
 /**
- * Quick filter panel (spec §5).
+ * Taxonomy filter panel.
  *
- * Subtopic options are re-fetched whenever the selected topics change, so the
- * list is always scoped to the current topic (spec §5, "Subtopic should
- * preferably be dynamically populated based on the selected Topic").
+ *     Subject  ->  Area / Topic  ->  Sub-Area / Sub-Topic  ->  Tags
+ *
+ * Each level is scoped by the one above it: choosing a subject narrows the
+ * areas, choosing an area narrows both the sub-areas and the suggested tags.
+ * When a parent selection is removed, children that no longer belong to it are
+ * dropped too, so the filter can never describe an impossible branch.
  */
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import api from '../lib/api.js';
 import { ChipSelect } from './ui.jsx';
 
 export default function FilterPanel({ meta, rule, onChange, compact = false }) {
-  const [subtopics, setSubtopics] = useState([]);
+  const [areas, setAreas] = useState([]);
+  const [subAreas, setSubAreas] = useState([]);
   const [tagQuery, setTagQuery] = useState('');
-  const [tagOptions, setTagOptions] = useState(meta?.tags || []);
+  const [tagOptions, setTagOptions] = useState([]);
 
-  const topics = rule.topic || [];
+  const subjects = useMemo(() => rule.subject || [], [rule.subject]);
+  const selectedAreas = useMemo(() => rule.area || [], [rule.area]);
 
+  const subjectKey = subjects.join('|');
+  const areaKey = selectedAreas.join('|');
+
+  // Areas cascade from the selected subjects. Pruning happens here rather than
+  // in the click handler: only once the scoped list has arrived do we know
+  // which of the already-selected areas still belong to the chosen subjects.
   useEffect(() => {
     let cancelled = false;
-    const load = async () => {
-      if (!topics.length) {
-        const all = await api.questions.facet('subtopic').catch(() => []);
-        if (!cancelled) setSubtopics(all);
-        return;
-      }
-      const lists = await Promise.all(topics.map((topic) => api.questions.facet('subtopic', topic).catch(() => [])));
-      if (cancelled) return;
-      // Merge counts when several topics are selected.
-      const merged = new Map();
-      for (const list of lists) {
-        for (const row of list) {
-          merged.set(row.value, (merged.get(row.value) || 0) + row.count);
+    api.questions.facet('area', subjects)
+      .then((rows) => {
+        if (cancelled) return;
+        setAreas(rows);
+        if (!subjects.length) return; // no scope, so nothing is out of scope
+        const allowed = new Set(rows.map((r) => r.value));
+        const kept = (rule.area || []).filter((a) => allowed.has(a));
+        if (kept.length !== (rule.area || []).length) {
+          onChange({ ...rule, area: kept, sub_area: kept.length ? rule.sub_area || [] : [] });
         }
-      }
-      setSubtopics([...merged].map(([value, count]) => ({ value, count })).sort((a, b) => b.count - a.count));
-    };
-    load();
+      })
+      .catch(() => !cancelled && setAreas([]));
     return () => { cancelled = true; };
-  }, [topics.join('|')]);
+  }, [subjectKey]);
 
+  // Sub-areas cascade from the selected areas, pruned the same way.
+  useEffect(() => {
+    let cancelled = false;
+    if (!selectedAreas.length) {
+      setSubAreas([]);
+      return () => { cancelled = true; };
+    }
+    api.questions.facet('sub_area', selectedAreas)
+      .then((rows) => {
+        if (cancelled) return;
+        setSubAreas(rows);
+        const allowed = new Set(rows.map((r) => r.value));
+        const kept = (rule.sub_area || []).filter((s) => allowed.has(s));
+        if (kept.length !== (rule.sub_area || []).length) onChange({ ...rule, sub_area: kept });
+      })
+      .catch(() => !cancelled && setSubAreas([]));
+    return () => { cancelled = true; };
+  }, [areaKey]);
+
+  // Tag suggestions follow the branch, and fall back to the whole vocabulary.
   useEffect(() => {
     let cancelled = false;
     const timer = setTimeout(() => {
-      api.questions.tags(tagQuery).then((rows) => !cancelled && setTagOptions(rows)).catch(() => {});
+      api.questions
+        .tags(tagQuery, { subjects, areas: selectedAreas })
+        .then((rows) => !cancelled && setTagOptions(rows))
+        .catch(() => {});
     }, 250);
     return () => { cancelled = true; clearTimeout(timer); };
-  }, [tagQuery]);
+  }, [tagQuery, subjectKey, areaKey]);
 
   const patch = (changes) => onChange({ ...rule, ...changes });
 
-  // Dropping a topic must also drop subtopics that no longer belong to it.
-  const setTopics = (next) => {
-    const allowed = new Set(subtopics.map((s) => s.value));
+  // Selection handlers stay simple; the cascade effects above prune anything
+  // that no longer fits once the newly scoped options arrive.
+  const setSubjects = (next) => patch({ subject: next });
+
+  const setAreasSelection = (next) => {
+    const allowed = new Set(subAreas.filter((s) => next.includes(s.area)).map((s) => s.value));
     patch({
-      topic: next,
-      subtopic: next.length ? (rule.subtopic || []).filter((s) => allowed.has(s)) : rule.subtopic,
+      area: next,
+      sub_area: next.length ? (rule.sub_area || []).filter((s) => allowed.has(s)) : [],
     });
   };
+
+  const areaOptions = areas.slice(0, compact ? 24 : 80);
+  const subAreaOptions = subAreas.slice(0, compact ? 16 : 40);
 
   return (
     <>
@@ -72,51 +106,72 @@ export default function FilterPanel({ meta, rule, onChange, compact = false }) {
       </div>
 
       <div className="field">
-        <span className="field-label">Topic</span>
-        <ChipSelect options={meta?.topics || []} selected={topics} onChange={setTopics} />
+        <span className="field-label">Subject</span>
+        <ChipSelect
+          options={meta?.subjects || []}
+          selected={subjects}
+          onChange={setSubjects}
+          emptyLabel="No subjects in the bank yet"
+        />
       </div>
 
       <div className="field">
         <span className="field-label">
-          Subtopic
-          {topics.length > 0 && <span className="faint"> · scoped to {topics.join(', ')}</span>}
+          Area / Topic
+          {subjects.length > 0 && <span className="faint"> · in {subjects.join(', ')}</span>}
         </span>
         <ChipSelect
-          options={subtopics.slice(0, compact ? 12 : 40)}
-          selected={rule.subtopic || []}
-          onChange={(v) => patch({ subtopic: v })}
-          emptyLabel="Select a topic to see its subtopics"
+          options={areaOptions}
+          selected={selectedAreas}
+          onChange={setAreasSelection}
+          emptyLabel="Select a subject to narrow the areas"
         />
+        {areas.length > areaOptions.length && (
+          <span className="field-hint">
+            Showing {areaOptions.length} of {areas.length} areas — pick a subject to narrow the list.
+          </span>
+        )}
       </div>
 
       <div className="field">
-        <span className="field-label">Difficulty</span>
+        <span className="field-label">
+          Sub-Area / Sub-Topic
+          {selectedAreas.length > 0 && <span className="faint"> · in {selectedAreas.join(', ')}</span>}
+        </span>
         <ChipSelect
-          options={(meta?.difficulties || []).map((value) => ({ value }))}
-          selected={rule.difficulty || []}
-          onChange={(v) => patch({ difficulty: v })}
-          showCounts={false}
+          options={subAreaOptions}
+          selected={rule.sub_area || []}
+          onChange={(v) => patch({ sub_area: v })}
+          emptyLabel={
+            selectedAreas.length
+              ? 'These areas have no sub-areas — the area itself is the finest level'
+              : 'Select an area to see its sub-areas'
+          }
         />
       </div>
 
       <div className="field">
-        <span className="field-label">Tags</span>
+        <span className="field-label">
+          Tags <span className="faint">· optional</span>
+        </span>
         <input
           type="search"
-          placeholder="Search tags…"
+          placeholder={selectedAreas.length ? `Search tags in ${selectedAreas[0]}…` : 'Search tags…'}
           value={tagQuery}
           onChange={(e) => setTagQuery(e.target.value)}
           className="mb-1"
         />
         <div className="small muted mb-1">Include (question must carry any of these)</div>
         <ChipSelect
-          options={tagOptions.slice(0, compact ? 14 : 30)}
+          options={tagOptions.slice(0, compact ? 16 : 40)}
           selected={rule.includeTags || []}
           onChange={(v) => patch({ includeTags: v })}
+          showCounts={false}
+          emptyLabel="No tags match"
         />
         <div className="small muted mt-1 mb-1">Exclude (question must carry none of these)</div>
         <div className="chip-select">
-          {tagOptions.slice(0, compact ? 14 : 30).map((tag) => {
+          {tagOptions.slice(0, compact ? 16 : 40).map((tag) => {
             const active = (rule.excludeTags || []).includes(tag.value);
             return (
               <button
@@ -135,6 +190,16 @@ export default function FilterPanel({ meta, rule, onChange, compact = false }) {
             );
           })}
         </div>
+      </div>
+
+      <div className="field">
+        <span className="field-label">Difficulty</span>
+        <ChipSelect
+          options={(meta?.difficulties || []).map((value) => ({ value }))}
+          selected={rule.difficulty || []}
+          onChange={(v) => patch({ difficulty: v })}
+          showCounts={false}
+        />
       </div>
 
       <div className="field">

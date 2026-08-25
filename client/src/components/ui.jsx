@@ -35,6 +35,58 @@ export function DifficultyBadge({ level }) {
   return <Badge variant={variant}>{level}</Badge>;
 }
 
+/**
+ * Renders a question's taxonomy branches.
+ *
+ * A QID may sit in several branches, so this shows the primary one in full
+ * (Subject > Area > Sub-Area) and summarises the rest rather than pretending
+ * there is only one classification.
+ */
+export function TaxonomyBadges({ question, showSubject = true, compact = false }) {
+  if (!question) return null;
+  const branches = question.taxonomy || [];
+  if (!branches.length) {
+    return <span className="faint small">unclassified</span>;
+  }
+
+  const primary = question.primary || branches[0];
+  const others = branches.length - 1;
+
+  return (
+    <>
+      {showSubject && <Badge variant="brand">{primary.subject}</Badge>}
+      <Badge>{primary.area}</Badge>
+      {primary.subArea && <span className="faint small">{primary.subArea}</span>}
+      {others > 0 && (
+        <span
+          className="badge"
+          title={branches
+            .slice(1)
+            .map((b) => `${b.subject} › ${b.area}${b.subArea ? ` › ${b.subArea}` : ''}`)
+            .join('\n')}
+        >
+          +{others} more
+        </span>
+      )}
+      {!compact && null}
+    </>
+  );
+}
+
+/** Compact "Subject › Area › Sub-Area" text for table cells. */
+export function TaxonomyPath({ question, fallback = '—' }) {
+  const primary = question?.primary;
+  if (!primary) return <span className="faint">{fallback}</span>;
+  const extra = (question.taxonomy?.length || 1) - 1;
+  return (
+    <span title={(question.taxonomy || []).map((b) => `${b.subject} › ${b.area}${b.subArea ? ` › ${b.subArea}` : ''}`).join('\n')}>
+      {primary.area}
+      {primary.subArea && <span className="faint"> › {primary.subArea}</span>}
+      {extra > 0 && <span className="faint"> +{extra}</span>}
+    </span>
+  );
+}
+
 export function Alert({ variant = 'info', title, children }) {
   const icon = { error: '✕', warning: '⚠', success: '✓', info: 'ℹ' }[variant];
   return (
@@ -165,26 +217,48 @@ export function Pagination({ page, pageCount, total, pageSize, onPage, onPageSiz
   );
 }
 
-/** Multi-select chip group backed by facet counts. */
+/**
+ * Multi-select chip group backed by facet counts.
+ *
+ * Taxonomy options can repeat a name across parents — "Arrays and Strings"
+ * exists under four subjects — so chips are keyed by id where one is available
+ * and the parent is surfaced in the tooltip. Selecting such a chip selects the
+ * name, which matches the filter semantics: the name is scoped by whatever
+ * parent level is also selected.
+ */
 export function ChipSelect({ options, selected = [], onChange, showCounts = true, emptyLabel = 'No options available' }) {
   const toggle = (value) => {
     onChange(selected.includes(value) ? selected.filter((v) => v !== value) : [...selected, value]);
   };
   if (!options?.length) return <p className="faint small mb-0">{emptyLabel}</p>;
+
+  // Names that appear more than once need their parent shown to be tellable apart.
+  const seen = new Map();
+  for (const option of options) {
+    const value = typeof option === 'string' ? option : option.value;
+    seen.set(value, (seen.get(value) || 0) + 1);
+  }
+
   return (
     <div className="chip-select">
-      {options.map((option) => {
-        const value = typeof option === 'string' ? option : option.value;
-        const count = typeof option === 'string' ? null : option.count;
+      {options.map((option, index) => {
+        const isObject = typeof option !== 'string';
+        const value = isObject ? option.value : option;
+        const count = isObject ? option.count : null;
+        const parent = isObject ? option.subject || option.area || null : null;
+        const ambiguous = seen.get(value) > 1 && parent;
+
         return (
           <button
             type="button"
-            key={value}
+            key={(isObject && option.id != null ? `id-${option.id}` : `${value}-${index}`)}
             className={`chip${selected.includes(value) ? ' selected' : ''}`}
             onClick={() => toggle(value)}
             aria-pressed={selected.includes(value)}
+            title={parent ? `${parent} › ${value}` : undefined}
           >
             {value || '(none)'}
+            {ambiguous && <span className="chip-count">{parent}</span>}
             {showCounts && count != null && <span className="chip-count">{count.toLocaleString()}</span>}
           </button>
         );

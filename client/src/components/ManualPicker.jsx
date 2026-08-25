@@ -9,7 +9,7 @@
 import { useEffect, useState } from 'react';
 import api from '../lib/api.js';
 import { useDebounced } from '../lib/hooks.js';
-import { Modal, Badge, DifficultyBadge, Pagination, Spinner, EmptyState } from './ui.jsx';
+import { Modal, Badge, DifficultyBadge, Pagination, Spinner, EmptyState, TaxonomyPath } from './ui.jsx';
 
 export default function ManualPicker({ section, onClose, onConfirm, excludeQids = [] }) {
   const [selected, setSelected] = useState(new Set(section.qids || []));
@@ -140,7 +140,7 @@ export default function ManualPicker({ section, onClose, onConfirm, excludeQids 
                   <th>Question</th>
                   <th className="sortable" onClick={() => sortBy('question_type')}>Type</th>
                   <th className="sortable" onClick={() => sortBy('difficulty')}>Level</th>
-                  <th className="sortable" onClick={() => sortBy('topic')}>Topic</th>
+                  <th>Subject / Area</th>
                   <th className="sortable right" onClick={() => sortBy('marks')}>Marks</th>
                 </tr>
               </thead>
@@ -167,7 +167,11 @@ export default function ManualPicker({ section, onClose, onConfirm, excludeQids 
                     </td>
                     <td className="nowrap">{question.question_type}</td>
                     <td><DifficultyBadge level={question.difficulty} /></td>
-                    <td className="nowrap">{question.topic}</td>
+                    <td className="small">
+                      {question.primary
+                        ? <>{question.primary.subject}<div className="faint"><TaxonomyPath question={question} /></div></>
+                        : <span className="faint">unclassified</span>}
+                    </td>
                     <td className="right">{question.marks}</td>
                   </tr>
                 ))}

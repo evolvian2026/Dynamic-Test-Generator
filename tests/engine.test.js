@@ -13,10 +13,13 @@ const { validateTestDefinition } = await import('../server/core/validation.js');
 const { createRng, shuffle, seededHash } = await import('../server/core/rng.js');
 
 test('filter engine binds values instead of interpolating them', () => {
-  const { where, params } = compileFilter({ topic: ["Arrays' OR 1=1--"] });
+  const injected = "Arrays' OR 1=1--";
+  const { where, params } = compileFilter({ question_type: [injected] });
   assert.ok(!where.includes('OR 1=1'), 'user input must never reach the SQL string');
-  assert.ok(params.includes("Arrays' OR 1=1--"));
-  assert.equal(countMatching({ topic: ["Arrays' OR 1=1--"] }), 0);
+  assert.ok(params.includes(injected));
+  assert.equal(countMatching({ question_type: [injected] }), 0);
+  // Unresolvable taxonomy names must exclude everything, never widen the query.
+  assert.equal(countMatching({ subject: [injected] }), 0);
 });
 
 test('filter engine rejects unknown fields', () => {
@@ -29,11 +32,11 @@ test('filter engine rejects unknown fields', () => {
 test('quick filters narrow the result set monotonically', () => {
   const all = countMatching({});
   const mcq = countMatching({ question_type: ['MCQ'] });
-  const mcqArrays = countMatching({ question_type: ['MCQ'], topic: ['Arrays'] });
-  const mcqArraysHard = countMatching({ question_type: ['MCQ'], topic: ['Arrays'], difficulty: ['Hard'] });
+  const mcqOs = countMatching({ question_type: ['MCQ'], subject: ['Operating System'] });
+  const mcqOsHard = countMatching({ question_type: ['MCQ'], subject: ['Operating System'], difficulty: ['Hard'] });
 
-  assert.ok(all > mcq && mcq > mcqArrays && mcqArrays >= mcqArraysHard);
-  assert.ok(mcqArraysHard > 0, 'the seeded bank should contain hard array MCQs');
+  assert.ok(all > mcq && mcq > mcqOs && mcqOs >= mcqOsHard);
+  assert.ok(mcqOsHard > 0, 'the seeded bank should contain hard OS MCQs');
 });
 
 test('tag include and exclude behave as set operations', () => {
@@ -44,13 +47,13 @@ test('tag include and exclude behave as set operations', () => {
 });
 
 test('AND / OR / NOT trees compile and evaluate correctly', () => {
-  const arrays = countMatching({ topic: ['Arrays'] });
-  const arraysHard = countMatching({ topic: ['Arrays'], difficulty: ['Hard'] });
+  const os = countMatching({ subject: ['Operating System'] });
+  const osHard = countMatching({ subject: ['Operating System'], difficulty: ['Hard'] });
 
   const orTree = {
     op: 'AND',
     children: [
-      { field: 'topic', operator: 'in', value: ['Arrays'] },
+      { field: 'subject', operator: 'in', value: ['Operating System'] },
       { op: 'OR', children: [
         { field: 'difficulty', operator: 'eq', value: 'Hard' },
         { field: 'tags', operator: 'has_any', value: ['advanced'] },
@@ -58,16 +61,16 @@ test('AND / OR / NOT trees compile and evaluate correctly', () => {
     ],
   };
   const orCount = countMatching(orTree);
-  assert.ok(orCount >= arraysHard && orCount <= arrays, 'OR widens within the AND branch');
+  assert.ok(orCount >= osHard && orCount <= os, 'OR widens within the AND branch');
 
   const notTree = {
     op: 'AND',
     children: [
-      { field: 'topic', operator: 'in', value: ['Arrays'] },
+      { field: 'subject', operator: 'in', value: ['Operating System'] },
       { op: 'NOT', children: [{ field: 'difficulty', operator: 'eq', value: 'Hard' }] },
     ],
   };
-  assert.equal(countMatching(notTree), arrays - arraysHard);
+  assert.equal(countMatching(notTree), os - osHard);
 });
 
 test('extensible attribute fields are filterable without schema changes', () => {
@@ -93,7 +96,7 @@ test('a percentage distribution that does not total 100 is rejected', () => {
 });
 
 test('the same seed reproduces the same test', () => {
-  const sections = [{ section_name: 'S', question_count: 8, marks_per_question: 1, rule: { topic: ['Arrays'] } }];
+  const sections = [{ section_name: 'S', question_count: 8, marks_per_question: 1, rule: { subject: ['Operating System'] } }];
   const first = generateSelection({ sections, seed: 'DSA2026' });
   const second = generateSelection({ sections, seed: 'DSA2026' });
   const third = generateSelection({ sections, seed: 'DIFFERENT' });
@@ -109,7 +112,7 @@ test('a QID never appears twice in one test when deduplication is on', () => {
     question_count: 12,
     marks_per_question: 1,
     // Deliberately overlapping filters.
-    rule: { topic: ['Arrays'] },
+    rule: { subject: ['Operating System'] },
   }));
   const result = generateSelection({ sections, seed: 'DEDUPE', preventDuplicates: true });
   const qids = result.sections.flatMap((s) => s.questions.map((q) => q.qid));
@@ -123,7 +126,7 @@ test('generation refuses to silently under-deliver', () => {
     section_name: 'Impossible',
     question_count: 99999,
     marks_per_question: 1,
-    rule: { question_type: ['Coding'], topic: ['Arrays'], difficulty: ['Hard'] },
+    rule: { question_type: ['Coding'], subject: ['Operating System'], difficulty: ['Hard'] },
   }];
   assert.throws(() => generateSelection({ sections, seed: 'X' }), GenerationError);
 
@@ -136,10 +139,10 @@ test('generation refuses to silently under-deliver', () => {
 
 test('availability reports a shortfall with workable suggestions', () => {
   const section = {
-    section_name: 'Hard array MCQs',
+    section_name: 'Hard OS MCQs',
     question_count: 9999,
     marks_per_question: 1,
-    rule: { question_type: ['MCQ'], topic: ['Arrays'], difficulty: ['Hard'] },
+    rule: { question_type: ['MCQ'], subject: ['Operating System'], difficulty: ['Hard'] },
   };
   const result = checkSection(section);
 
@@ -158,7 +161,7 @@ test('a suggested reduction respects an active difficulty distribution', () => {
     section_name: 'Distributed',
     question_count: 900,
     marks_per_question: 1,
-    rule: { question_type: ['MCQ'], topic: ['Arrays'] },
+    rule: { question_type: ['MCQ'], subject: ['Operating System'] },
     distribution: { field: 'difficulty', mode: 'percentage', values: { Easy: 20, Medium: 50, Hard: 30 } },
   };
   const result = checkSection(section);
@@ -190,7 +193,7 @@ test('distribution buckets are honoured exactly during generation', () => {
 test('versions keep the distribution but change the questions', () => {
   const sections = [{
     section_name: 'S', question_count: 10, marks_per_question: 1,
-    rule: { question_type: ['MCQ'], topic: ['Arrays'] },
+    rule: { question_type: ['MCQ'], subject: ['Operating System'] },
     distribution: { field: 'difficulty', mode: 'percentage', values: { Easy: 20, Medium: 50, Hard: 30 } },
   }];
   const { versions } = generateVersions({ sections, count: 3, seed: 'VER', uniqueAcrossVersions: true });
@@ -211,7 +214,7 @@ test('versions keep the distribution but change the questions', () => {
 test('disjoint versions fail honestly when the bank is too small', () => {
   const sections = [{
     section_name: 'Narrow', question_count: 10, marks_per_question: 1,
-    rule: { question_type: ['Coding'], topic: ['Arrays'], difficulty: ['Hard'] },
+    rule: { question_type: ['Coding'], subject: ['Operating System'], difficulty: ['Hard'] },
   }];
   // Asking for many disjoint versions of a narrow slice must raise rather than
   // quietly hand back short versions.
@@ -223,17 +226,17 @@ test('disjoint versions fail honestly when the bank is too small', () => {
 
 test('explainMatch reports each criterion for the audit view', () => {
   const [question] = getQuestionsByQids(
-    sampleQuestions({ question_type: ['MCQ'], topic: ['Arrays'] }, { count: 1, seed: 'E' }).map((r) => r.qid),
+    sampleQuestions({ question_type: ['MCQ'], subject: ['Operating System'] }, { count: 1, seed: 'E' }).map((r) => r.qid),
   );
   const { matched, criteria } = explainMatch(
-    { question_type: ['MCQ'], topic: ['Arrays'], excludeTags: ['nonexistent-tag'] },
+    { question_type: ['MCQ'], subject: ['Operating System'], excludeTags: ['nonexistent-tag'] },
     question,
   );
   assert.equal(matched, true);
   assert.ok(criteria.length >= 3);
   assert.ok(criteria.every((c) => c.passed));
 
-  const failing = explainMatch({ topic: ['Graph'] }, question);
+  const failing = explainMatch({ subject: ['Flutter'] }, question);
   assert.equal(failing.matched, false);
   assert.equal(failing.criteria[0].passed, false);
 });
@@ -289,10 +292,10 @@ test('seeded RNG is stable across processes', () => {
 });
 
 test('sampling never returns duplicates or excluded QIDs', () => {
-  const first = sampleQuestions({ topic: ['Arrays'] }, { count: 15, seed: 'S1' });
+  const first = sampleQuestions({ subject: ['Operating System'] }, { count: 15, seed: 'S1' });
   const qids = first.map((r) => r.qid);
   assert.equal(new Set(qids).size, qids.length);
 
-  const second = sampleQuestions({ topic: ['Arrays'] }, { count: 15, seed: 'S2', excludeQids: qids });
+  const second = sampleQuestions({ subject: ['Operating System'] }, { count: 15, seed: 'S2', excludeQids: qids });
   assert.ok(second.every((r) => !qids.includes(r.qid)), 'excluded QIDs must not reappear');
 });

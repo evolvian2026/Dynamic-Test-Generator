@@ -1,9 +1,18 @@
 # Dynamic Test Generator
 
 A production-ready web application that builds tests **dynamically from an existing
-QID-based question bank**. Users describe what they need — question types, topics,
-subtopics, difficulty mixes, tags, section structure — and the system finds the
-eligible QIDs and assembles the test.
+QID-based question bank**. Users describe what they need — question types, subjects,
+areas, sub-areas, difficulty mixes, tags, section structure — and the system finds
+the eligible QIDs and assembles the test.
+
+Questions are classified against a four-level taxonomy:
+
+```
+Subject  →  Area / Topic  →  Sub-Area / Sub-Topic (optional)  →  Tags (optional)
+```
+
+A QID may be mapped to **one or more** branches of that tree. The shipped taxonomy
+holds **35 subjects, 293 areas, 18 sub-areas and 2,294 tags**.
 
 The application never authors questions. It only selects them.
 
@@ -13,6 +22,7 @@ The application never authors questions. It only selects them.
 
 - [Quick start](#quick-start)
 - [How it works](#how-it-works)
+- [The taxonomy](#the-taxonomy)
 - [Feature map](#feature-map)
 - [Architecture](#architecture)
 - [Data model](#data-model)
@@ -32,7 +42,7 @@ The application never authors questions. It only selects them.
 ```bash
 npm install
 cp .env.example .env          # then set JWT_SECRET to a long random value
-npm run migrate               # create the schema and the bootstrap admin
+npm run migrate               # schema, taxonomy and the bootstrap admin
 npm run seed                  # load a 5,000-question demo bank
 npm run build                 # build the web client
 npm start                     # http://localhost:4000
@@ -63,6 +73,72 @@ npm run seed -- --count 300000 --seed BIG    # ~300k questions
 npm run seed -- --fresh                      # wipe the bank first
 npm run reset                                # delete the database entirely
 ```
+
+---
+
+## The taxonomy
+
+The classification hierarchy is reference data, shipped with the application in
+`server/db/taxonomy/taxonomy.json` and loaded by every migration. The workbook it
+was generated from is kept alongside it for provenance.
+
+```
+Subject                     35   e.g. "Operating System", "Data Structures and Algorithms"
+└── Area / Topic           293   e.g. "Memory Management", "Graphs"
+    └── Sub-Area          18   e.g. "Virtual Memory and Paging"   (only 9 areas have any)
+        └── Tags        2,294   e.g. "Page Replacement (FIFO, LRU, Optimal, LFU)"   optional
+```
+
+### Regenerating it from a workbook
+
+```bash
+npm install --save-dev xlsx        # only needed to re-import; the JSON is committed
+npm run taxonomy:import -- server/db/taxonomy/Technical_Questions_Taxonomy.xlsx
+npm run migrate                    # load the updated tree
+```
+
+The importer expects one row per Area:
+
+| Subject | Area | Sub Areas | Tags |
+|---|---|---|---|
+| Operating System | Memory Management | Address Spaces and Allocation, Virtual Memory and Paging | Paging, Page Replacement (FIFO, LRU, Optimal, LFU), Thrashing |
+
+Splitting the comma-separated columns is **bracket-aware**. A tag such as
+`Page Replacement (FIFO, LRU, Optimal, LFU)` contains commas that belong to the
+tag; a naive split shreds 265 tags in the supplied workbook. The importer's
+totals are cross-checked against the workbook's own Summary sheet.
+
+Loading is idempotent. Areas that disappear from a new revision of the workbook
+are **reported, not deleted**, because questions may still be mapped to them.
+
+### Mapping a QID
+
+A question's classification lives in `question_taxonomy`, one row per branch:
+
+```
+QID1087  ─┬─ Operating System  › Memory Management › Virtual Memory and Paging   (primary)
+          └─ Generative AI     › Fine-Tuning and Customization
+```
+
+Exactly one branch is marked primary; that is what single-value displays (a table
+column, an export cell) show. Filtering matches a question if **any** of its
+branches satisfies the constraint.
+
+### Why levels must match on the same branch
+
+19 area names are shared between subjects — `Process Management` exists under both
+*Operating System* and *Linux*, and `Arrays and Strings` under four subjects. So
+`Subject = Operating System AND Area = Process Management` compiles to **one**
+lookup with both conditions on the same mapping row:
+
+```sql
+q.id IN (SELECT qt.question_id FROM question_taxonomy qt
+          WHERE qt.subject_id IN (?) AND qt.area_id IN (?, ?))
+```
+
+Compiling one lookup per level instead would let a question mapped to
+*Linux › Process Management* **and** some unrelated *Operating System* area satisfy
+both halves and match a branch it does not actually have.
 
 ---
 
@@ -103,7 +179,7 @@ Three ideas hold the design together:
    correct in every test that references it.
 
 2. **The filter engine is metadata-driven.** Nothing in the query layer knows
-   that "topic" or "difficulty" are special. Fields are declared in a registry
+   that "subject" or "difficulty" are special. Fields are declared in a registry
    (`server/core/metadata.js`); the engine, the API and the filter-builder UI all
    read from it. Adding *Company*, *Bloom's Taxonomy* or *Quality Score* as a
    filterable field is a one-line change with no migration.
@@ -124,7 +200,7 @@ Every numbered requirement from the specification, and where it lives.
 | 1–2 | QID-based bank, selection not authoring | `server/core/questions.js`, `db/schema.sql` |
 | 3 | Step 1 — test information | `client/src/pages/CreateTest.jsx` |
 | 4 | Step 2 — multiple sections | `client/src/components/SectionEditor.jsx` |
-| 5 | Advanced selection, topic-scoped subtopics | `client/src/components/FilterPanel.jsx`, `core/filterEngine.js` |
+| 5 | Advanced selection, cascading Subject→Area→Sub-Area→Tags | `client/src/components/FilterPanel.jsx`, `core/filterEngine.js`, `core/taxonomy.js` |
 | 6 | Question distribution (% and exact counts) | `server/core/distribution.js` |
 | 7 | Availability check with remedies | `server/core/availability.js` |
 | 8 | Automatic / Manual / Hybrid modes | `server/core/generator.js`, `components/ManualPicker.jsx` |
@@ -140,6 +216,7 @@ Every numbered requirement from the specification, and where it lives.
 | 18 | Test history | `pages/GeneratedTests.jsx` |
 | 19 | PDF / Excel / CSV / JSON export | `server/services/exportService.js` |
 | 20 | Database design | `server/db/schema.sql` |
+| — | Taxonomy import and QID mapping | `scripts/import-taxonomy.mjs`, `core/taxonomy.js`, `db/backfill.js` |
 | 21 | Large-scale performance | indexes, facet counters, window sampling |
 | 22 | Validation rules | `server/core/validation.js` |
 | 23 | Three-panel UI | `pages/CreateTest.jsx`, `styles/app.css` |
@@ -162,9 +239,12 @@ server/
 ├── index.js                bootstrap + graceful shutdown
 ├── db/
 │   ├── schema.sql          tables, indexes, FTS5, facet triggers
-│   ├── migrate.js          idempotent migration + bootstrap admin
-│   └── seed.js             deterministic bank generator
+│   ├── migrate.js          idempotent migration + taxonomy load + bootstrap admin
+│   ├── backfill.js         upgrade path from the pre-taxonomy schema
+│   ├── seed.js             deterministic bank generator
+│   └── taxonomy/           taxonomy.json (committed) + source workbook
 ├── core/
+│   ├── taxonomy.js         hierarchy loading, cascades, name→id index
 │   ├── metadata.js         FIELD REGISTRY — drives everything filterable
 │   ├── filterEngine.js     boolean tree → parameterised SQL; explainability
 │   ├── questions.js        counting, paging, seeded sampling, facets
@@ -200,9 +280,13 @@ SQL and ports to PostgreSQL with the FTS and `seeded_hash` pieces swapped.
 Four concerns, kept deliberately separate (spec §30):
 
 ```
-questions ───┬── question_options      the bank — never modified by test generation
+taxonomy_subjects ── taxonomy_areas ── taxonomy_sub_areas   the classification tree
+                            └── taxonomy_area_tags ── taxonomy_tags
+
+questions ───┬── question_taxonomy      QID → branch(es), many-to-many
+             ├── question_options       the bank — never modified by test generation
              ├── question_tags
-             └── question_attributes   extensible metadata (any future field)
+             └── question_attributes    extensible metadata (any future field)
 
 tests ───┬── test_sections             the rules: what each section should contain
          └── test_questions            the outcome: which QIDs were selected
@@ -219,18 +303,26 @@ and **"Why was this question selected?"** possible long after generation.
 ### Indexes
 
 ```sql
-idx_questions_selection   (status, question_type, topic, difficulty, subtopic, id)
-idx_questions_topic_sub   (topic, subtopic, status, id)
+idx_questions_selection   (status, question_type, difficulty, id)
 idx_questions_difficulty  (difficulty, status, id)
 idx_questions_type        (question_type, status, id)
+idx_qtax_subject          (subject_id, question_id)   -- taxonomy lookups are range scans
+idx_qtax_area             (area_id, question_id)
+idx_qtax_sub_area         (sub_area_id, question_id)
+idx_qtax_unique           (question_id, area_id, COALESCE(sub_area_id, 0))  UNIQUE
 idx_tags_tag              (tag, question_id)          -- tag lookups are range scans
 idx_attr_lookup           (attr_key, attr_value, question_id)
 idx_attr_numeric          (attr_key, num_value, question_id)
 questions_fts             FTS5 external-content index over question_text
 ```
 
+Taxonomy and tag predicates compile to `q.id IN (SELECT question_id FROM … WHERE …)`
+rather than a correlated `EXISTS`. That lets SQLite build the matching set once
+from the leading index column instead of probing per candidate row — on a
+300,000-question bank the difference is about 9 ms versus 72 ms.
+
 `facet_counts` is maintained by triggers, so the Question Bank dashboard, the
-topic/subtopic dropdowns and the tag vocabulary are O(1) lookups instead of
+taxonomy dropdowns and the tag vocabulary are O(1) lookups instead of
 `SELECT DISTINCT` scans over the whole bank.
 
 ---
@@ -244,13 +336,17 @@ Two input shapes, one compiler.
 ```json
 {
   "question_type": ["MCQ"],
-  "topic": ["Arrays"],
-  "subtopic": ["Searching"],
+  "subject": ["Operating System"],
+  "area": ["Memory Management"],
+  "sub_area": ["Virtual Memory and Paging"],
   "difficulty": ["Hard"],
-  "includeTags": ["two-pointer"],
+  "includeTags": ["Demand Paging"],
   "excludeTags": ["beginner"]
 }
 ```
+
+The three taxonomy levels are compiled together as a single same-branch
+constraint (see [Why levels must match on the same branch](#why-levels-must-match-on-the-same-branch)).
 
 **Boolean tree** — what the Smart Filter Builder emits, nestable to 12 levels:
 
@@ -258,7 +354,7 @@ Two input shapes, one compiler.
 {
   "op": "AND",
   "children": [
-    { "field": "topic", "operator": "in", "value": ["Arrays"] },
+    { "field": "subject", "operator": "in", "value": ["Operating System"] },
     { "op": "OR", "children": [
       { "field": "difficulty", "operator": "eq", "value": "Hard" },
       { "field": "tags", "operator": "has_any", "value": ["advanced"] }
@@ -305,18 +401,22 @@ Measured on a **300,000-question** bank (this machine, cold cache warmed by one
 
 | Operation | Time |
 |---|---|
-| Count: type + topic + difficulty | 0.9 ms |
-| Count: + subtopic | 0.3 ms |
-| Count: whole active bank (270k rows) | 11 ms |
-| Count: tag exclusion | 11 ms |
-| Full-text search | 9–15 ms |
-| Topic / subtopic dropdowns (facet counters) | 0.2–1.0 ms |
+| Count: subject | 42 ms |
+| Count: subject + area | 9 ms |
+| Count: subject + area + sub-area | 4 ms |
+| Count: ambiguous area name, unscoped | 8 ms |
+| Count: whole active bank | 11 ms |
+| Count: taxonomy + tag exclusion | 31 ms |
+| Full-text search | 2–15 ms |
+| Subject / area / sub-area cascades | 0.3–0.8 ms |
+| Taxonomy tag suggestions for a branch | 0.3 ms |
+| Full taxonomy tree with question counts | 26 ms |
 | Bank dashboard statistics | 1.0 ms |
-| Filtered listing, page 1 and page 200 | 17–21 ms |
-| Sample 20 from a narrow match set | 1.6 ms |
-| Sample 50 from a bank-wide match set | 34 ms |
-| Availability check with 3-way distribution | 3.2 ms |
-| **Generate a 50-question, 3-section test** | **207 ms** |
+| Filtered listing, page 1 and page 200 (hydrated) | 29–38 ms |
+| Sample 20 from a narrow branch | 12 ms |
+| Sample 50 from a bank-wide match set | 38 ms |
+| Availability check with 3-way distribution | 56 ms |
+| **Generate a 50-question, 3-section test** | **214 ms** |
 
 The browser never receives the bank: search is paginated and capped by
 `MAX_PAGE_SIZE`, and every filter is applied server-side.
@@ -333,7 +433,7 @@ Seed "DSA2026" + section rules  →  always the same QIDs, in the same order
 ```
 
 This is what makes test **versions** meaningful: versions A/B/C share the rules
-and therefore the difficulty and topic distribution, but derive distinct seeds
+and therefore the difficulty and taxonomy distribution, but derive distinct seeds
 (`DSA2026:vA`, `:vB`, `:vC`) and therefore distinct questions. With
 `uniqueAcrossVersions`, no QID is shared between them — and if the bank is too
 small for that, the system says so rather than silently overlapping.
@@ -382,8 +482,9 @@ and `/api/health`.
 |---|---|---|
 | `GET` | `/questions/metadata` | Field registry, operators, facet vocabularies |
 | `GET` | `/questions/statistics` | Dashboard counters |
-| `GET` | `/questions/facets/:dimension` | Facet values (`?parent=` scopes subtopics) |
-| `GET` | `/questions/tags?q=` | Tag autocomplete |
+| `GET` | `/questions/taxonomy` | Full Subject → Area → Sub-Area tree with counts |
+| `GET` | `/questions/facets/:dimension` | Facet values; `?parent=` cascades areas from subjects and sub-areas from areas |
+| `GET` | `/questions/tags?q=` | Tag autocomplete; `?subject=`/`?area=` scope it, `?source=taxonomy` returns the defined vocabulary |
 | `POST` | `/questions/search` | Paginated, filtered, sorted listing |
 | `POST` | `/questions/count` | Live availability count for a filter |
 | `POST` | `/questions/lookup` | Batch fetch by QID |
@@ -461,8 +562,8 @@ All settings come from the environment; see `.env.example`.
 npm test
 ```
 
-54 tests across three suites, each running against a fresh temporary database
-seeded with 4,000 questions:
+81 tests across four suites, each running against a fresh temporary database
+seeded with 4,000 questions classified against the real taxonomy:
 
 - **`tests/engine.test.js`** — filter compilation and SQL-injection safety,
   AND/OR/NOT evaluation, extensible attribute filtering, largest-remainder
@@ -473,6 +574,14 @@ seeded with 4,000 questions:
   checks, pagination caps, the end-to-end scenario from spec §27, replace /
   add / move / remove consistency, duplicate rejection, versions, templates,
   immediate token invalidation on deactivation, and audit logging.
+- **`tests/taxonomy.test.js`** — bracket-aware workbook parsing, the shipped
+  tree matching the workbook's own Summary totals, idempotent loading,
+  many-to-many mapping with exactly one primary branch, per-level filtering,
+  case-insensitive name resolution, unknown names excluding rather than
+  widening, **same-branch semantics for ambiguous area names**, cascading
+  lookups, branch-scoped tag suggestions, and the legacy upgrade path
+  (including the word-boundary rule that stops "Graph" matching
+  "Crypto*graph*y").
 - **`tests/exports.test.js`** — JSON structure, CSV field-count integrity with
   quoted separators, a real Excel workbook read back with ExcelJS, and PDF
   content extracted from the compressed content streams to assert that the

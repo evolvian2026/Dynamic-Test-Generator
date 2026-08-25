@@ -34,19 +34,29 @@ router.get('/overview', requirePermission('analytics:read'), (req, res) => {
   // Which questions are being reused most across generated tests.
   const mostUsed = db
     .prepare(
-      `SELECT tq.qid, COUNT(*) AS uses, q.topic, q.difficulty, q.question_type
+      `SELECT tq.qid, COUNT(*) AS uses, q.difficulty, q.question_type,
+              (SELECT a.name FROM question_taxonomy qt
+                 JOIN taxonomy_areas a ON a.id = qt.area_id
+                WHERE qt.question_id = q.id
+                ORDER BY qt.is_primary DESC LIMIT 1) AS area
          FROM test_questions tq JOIN questions q ON q.id = tq.question_id
         GROUP BY tq.qid ORDER BY uses DESC, tq.qid LIMIT 10`,
     )
     .all();
 
+  // Coverage is reported per subject. A question mapped to two subjects counts
+  // towards both, which is the honest reading of a multi-mapped QID.
   const coverage = db
     .prepare(
-      `SELECT q.topic,
-              COUNT(DISTINCT q.id) AS bank_questions,
+      `SELECT s.name AS subject,
+              COUNT(DISTINCT qt.question_id) AS bank_questions,
               COUNT(DISTINCT tq.qid) AS used_questions
-         FROM questions q LEFT JOIN test_questions tq ON tq.question_id = q.id
-        GROUP BY q.topic ORDER BY bank_questions DESC LIMIT 20`,
+         FROM taxonomy_subjects s
+         JOIN question_taxonomy qt ON qt.subject_id = s.id
+         LEFT JOIN test_questions tq ON tq.question_id = qt.question_id
+        GROUP BY s.id
+        HAVING bank_questions > 0
+        ORDER BY bank_questions DESC LIMIT 20`,
     )
     .all();
 
@@ -75,7 +85,7 @@ router.get('/overview', requirePermission('analytics:read'), (req, res) => {
   });
 });
 
-/** Difficulty / type / topic mix for one generated test. */
+/** Difficulty / type / subject mix for one generated test. */
 router.get('/tests/:id', requirePermission('analytics:read'), (req, res) => {
   const db = getDb();
   const test = db.prepare('SELECT id FROM tests WHERE id = ? OR test_id = ?').get(Number(req.params.id) || -1, req.params.id);
@@ -83,21 +93,28 @@ router.get('/tests/:id', requirePermission('analytics:read'), (req, res) => {
 
   const rows = db
     .prepare(
-      `SELECT q.difficulty, q.question_type, q.topic, q.subtopic, q.expected_seconds, tq.marks
+      `SELECT q.id, q.difficulty, q.question_type, q.expected_seconds, tq.marks,
+              (SELECT s.name FROM question_taxonomy qt
+                 JOIN taxonomy_subjects s ON s.id = qt.subject_id
+                WHERE qt.question_id = q.id ORDER BY qt.is_primary DESC LIMIT 1) AS subject,
+              (SELECT a.name FROM question_taxonomy qt
+                 JOIN taxonomy_areas a ON a.id = qt.area_id
+                WHERE qt.question_id = q.id ORDER BY qt.is_primary DESC LIMIT 1) AS area
          FROM test_questions tq JOIN questions q ON q.id = tq.question_id
         WHERE tq.test_id = ?`,
     )
     .all(test.id);
 
-  const tally = (key) => rows.reduce((acc, r) => ({ ...acc, [r[key]]: (acc[r[key]] || 0) + 1 }), {});
+  const tally = (key) => rows.reduce((acc, r) => (r[key] ? { ...acc, [r[key]]: (acc[r[key]] || 0) + 1 } : acc), {});
   res.json({
     totalQuestions: rows.length,
     totalMarks: rows.reduce((a, r) => a + r.marks, 0),
     estimatedMinutes: Math.round(rows.reduce((a, r) => a + r.expected_seconds, 0) / 60),
     byDifficulty: tally('difficulty'),
     byType: tally('question_type'),
-    byTopic: tally('topic'),
-    bankTopics: getFacet('topic').length,
+    bySubject: tally('subject'),
+    byArea: tally('area'),
+    bankSubjects: getFacet('subject').length,
   });
 });
 

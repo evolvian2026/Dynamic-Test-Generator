@@ -87,11 +87,11 @@ export const sampleTest = () => ({
   allowPartial: true,
   sections: [
     {
-      section_name: 'Arrays',
+      section_name: 'Operating Systems',
       question_count: 6,
       marks_per_question: 2,
       negative_marks: 0.5,
-      rule: { question_type: ['MCQ'], topic: ['Arrays'] },
+      rule: { question_type: ['MCQ'], subject: ['Operating System'] },
     },
     {
       section_name: 'Coding',
@@ -101,11 +101,11 @@ export const sampleTest = () => ({
       rule: { question_type: ['Coding'] },
     },
     {
-      section_name: 'Trees',
+      section_name: 'Databases',
       question_count: 3,
       marks_per_question: 2,
       negative_marks: 0,
-      rule: { question_type: ['Multiple Select'], topic: ['Trees'] },
+      rule: { question_type: ['MCQ'], subject: ['DBMS'] },
     },
   ],
 });

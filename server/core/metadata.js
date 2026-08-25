@@ -8,6 +8,8 @@
  *
  * `source` decides how a field is resolved:
  *   column    — a first-class indexed column on `questions`
+ *   taxonomy  — the Subject / Area / Sub-Area hierarchy, mapped many-to-many
+ *               to questions through `question_taxonomy`
  *   tag       — the many-to-many `question_tags` table
  *   attribute — the extensible key/value `question_attributes` table
  *   fts       — full-text search over question text
@@ -63,27 +65,41 @@ const FIELDS = [
     primary: true,
   },
   {
-    key: 'topic',
-    label: 'Topic',
-    source: 'column',
-    column: 'topic',
+    key: 'subject',
+    label: 'Subject',
+    source: 'taxonomy',
+    level: 'subject',
     dataType: 'enum',
     operators: ENUM_OPS,
-    facet: 'topic',
+    facet: 'subject',
     multi: true,
     group: 'Classification',
     primary: true,
   },
   {
-    key: 'subtopic',
-    label: 'Subtopic',
-    source: 'column',
-    column: 'subtopic',
+    key: 'area',
+    label: 'Area / Topic',
+    source: 'taxonomy',
+    level: 'area',
+    dataType: 'enum',
+    operators: ENUM_OPS,
+    facet: 'area',
+    // Area options are scoped by the selected subject.
+    cascadesFrom: 'subject',
+    multi: true,
+    group: 'Classification',
+    primary: true,
+  },
+  {
+    key: 'sub_area',
+    label: 'Sub-Area / Sub-Topic',
+    source: 'taxonomy',
+    level: 'sub_area',
     dataType: 'enum',
     operators: [...ENUM_OPS, 'is_set', 'is_not_set'],
-    facet: 'subtopic',
-    // Subtopic options are scoped by the selected topic (spec §5).
-    cascadesFrom: 'topic',
+    facet: 'sub_area',
+    // Sub-area options are scoped by the selected area (spec §5).
+    cascadesFrom: 'area',
     multi: true,
     group: 'Classification',
     primary: true,

@@ -24,7 +24,11 @@ export default function Dashboard() {
         {data && (
           <>
             <div className="grid grid-4 mb-2">
-              <Stat label="Questions in bank" value={data.bank.total.toLocaleString()} hint={`${data.bank.totalTopics} topics · ${data.bank.totalTags} tags`} />
+              <Stat
+                label="Questions in bank"
+                value={data.bank.total.toLocaleString()}
+                hint={`${data.bank.totalSubjects} subjects · ${data.bank.totalAreas} areas`}
+              />
               <Stat label="Generated tests" value={data.tests.total} hint={`${data.tests.drafts} draft · ${data.tests.published} published`} />
               <Stat label="Templates" value={data.templates} hint="Reusable blueprints" />
               <Stat label="Active users" value={data.users} hint="Across all roles" />
@@ -49,9 +53,9 @@ export default function Dashboard() {
                   formatValue={(v) => v.toLocaleString()}
                 />
                 <div className="divider" />
-                <span className="field-label">Top topics</span>
+                <span className="field-label">Top subjects</span>
                 <BarChart
-                  data={data.bank.byTopic.slice(0, 6).map((t) => ({ label: t.value, value: t.count }))}
+                  data={data.bank.bySubject.slice(0, 6).map((t) => ({ label: t.value, value: t.count }))}
                   formatValue={(v) => v.toLocaleString()}
                 />
               </Card>
@@ -106,7 +110,7 @@ export default function Dashboard() {
                         {data.mostUsed.map((row) => (
                           <tr key={row.qid}>
                             <td className="mono">{row.qid}</td>
-                            <td>{row.topic}</td>
+                            <td>{row.area || '—'}</td>
                             <td className="small">{row.question_type}</td>
                             <td className="right">{row.uses} test{row.uses === 1 ? '' : 's'}</td>
                           </tr>

@@ -2,7 +2,7 @@
  * Smart generation blueprints (spec §26).
  *
  * A blueprint describes *what a test should look like* — total questions,
- * difficulty mix, topic coverage, type mix — and this module expands it into
+ * difficulty mix, taxonomy coverage, type mix — and this module expands it into
  * concrete sections with concrete selection rules. Questions are always drawn
  * from the existing bank; nothing is ever invented.
  */
@@ -14,11 +14,11 @@ export const BLUEPRINTS = [
   {
     id: 'dsa-placement',
     name: 'DSA Placement Test',
-    description: '50 questions balanced across the core data-structure topics.',
+    description: '50 questions balanced across the core data-structure areas.',
     totalQuestions: 50,
     difficultyMix: { Easy: 20, Medium: 50, Hard: 30 },
     questionTypeMix: { MCQ: 70, 'Multiple Select': 20, Coding: 10 },
-    topics: ['Arrays', 'Strings', 'Linked List', 'Stack', 'Queue', 'Trees', 'Graph', 'Dynamic Programming'],
+    subjects: ['Data Structures and Algorithms'],
     marksPerQuestion: 2,
   },
   {
@@ -28,7 +28,8 @@ export const BLUEPRINTS = [
     totalQuestions: 20,
     difficultyMix: { Easy: 50, Medium: 50 },
     questionTypeMix: { MCQ: 100 },
-    topics: ['Arrays', 'Strings', 'Sorting', 'Searching'],
+    subjects: ['Data Structures and Algorithms'],
+    areas: ['Arrays and Matrices', 'String Algorithms', 'Sorting Algorithms', 'Searching Algorithms'],
     marksPerQuestion: 1,
   },
   {
@@ -38,8 +39,19 @@ export const BLUEPRINTS = [
     totalQuestions: 5,
     difficultyMix: { Medium: 60, Hard: 40 },
     questionTypeMix: { Coding: 100 },
-    topics: ['Arrays', 'Strings', 'Dynamic Programming', 'Graph'],
+    subjects: ['Data Structures and Algorithms'],
+    areas: ['Arrays and Matrices', 'String Algorithms', 'Dynamic Programming', 'Graphs'],
     marksPerQuestion: 10,
+  },
+  {
+    id: 'core-cs',
+    name: 'Core CS Fundamentals',
+    description: 'Operating Systems, Networks and DBMS in one paper.',
+    totalQuestions: 30,
+    difficultyMix: { Easy: 30, Medium: 50, Hard: 20 },
+    questionTypeMix: { MCQ: 80, 'Multiple Select': 20 },
+    subjects: ['Operating System', 'Computer Networks', 'DBMS'],
+    marksPerQuestion: 2,
   },
   {
     id: 'db-screening',
@@ -48,7 +60,7 @@ export const BLUEPRINTS = [
     totalQuestions: 25,
     difficultyMix: { Easy: 30, Medium: 50, Hard: 20 },
     questionTypeMix: { MCQ: 60, SQL: 40 },
-    topics: ['SQL & Databases'],
+    subjects: ['SQL', 'DBMS'],
     marksPerQuestion: 2,
   },
 ];
@@ -64,23 +76,31 @@ export function buildBlueprintSections(input) {
   const totalQuestions = input.totalQuestions ?? blueprint?.totalQuestions ?? 50;
   const difficultyMix = input.difficultyMix ?? blueprint?.difficultyMix ?? { Easy: 20, Medium: 50, Hard: 30 };
   const questionTypeMix = input.questionTypeMix ?? blueprint?.questionTypeMix ?? { MCQ: 100 };
-  const topics = input.topics?.length ? input.topics : blueprint?.topics ?? [];
+  const subjects = input.subjects?.length ? input.subjects : blueprint?.subjects ?? [];
+  const areas = input.areas?.length ? input.areas : blueprint?.areas ?? [];
   const marksPerQuestion = input.marksPerQuestion ?? blueprint?.marksPerQuestion ?? 1;
 
   const perType = allocate(totalQuestions, questionTypeMix);
+
+  const scope = areas.length
+    ? `${areas.length} area(s)`
+    : subjects.length
+      ? `${subjects.length} subject(s)`
+      : 'the whole bank';
 
   const sections = Object.entries(perType)
     .filter(([, count]) => count > 0)
     .map(([type, count], index) => {
       const rule = {
         question_type: [type],
-        ...(topics.length ? { topic: topics } : {}),
+        ...(subjects.length ? { subject: subjects } : {}),
+        ...(areas.length ? { area: areas } : {}),
         ...(input.includeTags?.length ? { includeTags: input.includeTags } : {}),
         ...(input.excludeTags?.length ? { excludeTags: input.excludeTags } : {}),
       };
       return {
         section_name: `${type}`,
-        section_description: `${count} ${type} questions${topics.length ? ` across ${topics.length} topic(s)` : ''}.`,
+        section_description: `${count} ${type} questions across ${scope}.`,
         section_order: index + 1,
         question_count: count,
         marks_per_question: type === 'Coding' ? Math.max(marksPerQuestion, 10) : marksPerQuestion,

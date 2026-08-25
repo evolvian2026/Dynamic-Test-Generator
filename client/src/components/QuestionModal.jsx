@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import api from '../lib/api.js';
-import { Modal, Badge, DifficultyBadge, Spinner, Alert } from './ui.jsx';
+import { Modal, Badge, DifficultyBadge, Spinner, Alert, TaxonomyBadges } from './ui.jsx';
 
 const LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
@@ -28,8 +28,7 @@ export default function QuestionModal({ qid, onClose, withAnswers = false }) {
           <div className="flex-gap mb-2">
             <Badge variant="brand">{question.question_type}</Badge>
             <DifficultyBadge level={question.difficulty} />
-            <Badge>{question.topic}</Badge>
-            {question.subtopic && <Badge>{question.subtopic}</Badge>}
+            <TaxonomyBadges question={question} />
             <Badge>{question.marks} mark{question.marks === 1 ? '' : 's'}</Badge>
             <Badge>{Math.round(question.expected_seconds / 60)} min</Badge>
             <Badge variant={question.status === 'active' ? 'success' : undefined}>{question.status}</Badge>

@@ -64,8 +64,13 @@ export function toJson(id) {
         marks: entry.marks,
         question_type: entry.question.question_type,
         question_text: entry.question.question_text,
-        topic: entry.question.topic,
-        subtopic: entry.question.subtopic,
+        // Full taxonomy branches, plus the primary one for single-value views.
+        taxonomy: entry.question.taxonomy,
+        subject: entry.question.primary?.subject ?? null,
+        area: entry.question.primary?.area ?? null,
+        sub_area: entry.question.primary?.subArea ?? null,
+        subjects: entry.question.subjects,
+        areas: entry.question.areas,
         difficulty: entry.question.difficulty,
         tags: entry.question.tags,
         options: entry.question.options,
@@ -82,7 +87,7 @@ export function toCsv(id, { includeAnswers = true } = {}) {
   const data = toJson(id);
   const header = [
     'test_id', 'test_name', 'section', 'question_number', 'qid', 'question_type', 'difficulty',
-    'topic', 'subtopic', 'tags', 'marks', 'question_text',
+    'subject', 'area', 'sub_area', 'all_subjects', 'all_areas', 'tags', 'marks', 'question_text',
     ...(includeAnswers ? ['correct_answer', 'explanation'] : []),
   ];
 
@@ -93,7 +98,10 @@ export function toCsv(id, { includeAnswers = true } = {}) {
       number += 1;
       rows.push([
         data.test.test_id, data.test.test_name, section.section_name, number, q.qid,
-        q.question_type, q.difficulty, q.topic, q.subtopic ?? '', (q.tags || []).join('|'),
+        q.question_type, q.difficulty,
+        q.subject ?? '', q.area ?? '', q.sub_area ?? '',
+        (q.subjects || []).join('|'), (q.areas || []).join('|'),
+        (q.tags || []).join('|'),
         q.marks, q.question_text,
         ...(includeAnswers ? [formatAnswer(q), q.explanation ?? ''] : []),
       ]);
@@ -184,8 +192,9 @@ export async function toXlsx(id) {
     { header: 'QID', key: 'qid', width: 12 },
     { header: 'Type', key: 'type', width: 16 },
     { header: 'Difficulty', key: 'difficulty', width: 12 },
-    { header: 'Topic', key: 'topic', width: 20 },
-    { header: 'Subtopic', key: 'subtopic', width: 20 },
+    { header: 'Subject', key: 'subject', width: 26 },
+    { header: 'Area / Topic', key: 'area', width: 26 },
+    { header: 'Sub-Area / Sub-Topic', key: 'sub_area', width: 24 },
     { header: 'Tags', key: 'tags', width: 28 },
     { header: 'Marks', key: 'marks', width: 8 },
     { header: 'Question', key: 'text', width: 90 },
@@ -199,8 +208,9 @@ export async function toXlsx(id) {
     { header: 'Correct Answer', key: 'answer', width: 60 },
     { header: 'Marks', key: 'marks', width: 8 },
     { header: 'Difficulty', key: 'difficulty', width: 12 },
-    { header: 'Topic', key: 'topic', width: 20 },
-    { header: 'Subtopic', key: 'subtopic', width: 20 },
+    { header: 'Subject', key: 'subject', width: 26 },
+    { header: 'Area / Topic', key: 'area', width: 26 },
+    { header: 'Sub-Area / Sub-Topic', key: 'sub_area', width: 24 },
     { header: 'Tags', key: 'tags', width: 28 },
   ];
 
@@ -210,13 +220,17 @@ export async function toXlsx(id) {
       number += 1;
       questions.addRow({
         number, section: section.section_name, qid: q.qid, type: q.question_type,
-        difficulty: q.difficulty, topic: q.topic, subtopic: q.subtopic ?? '',
+        difficulty: q.difficulty,
+        subject: (q.subjects || []).join(', ') || q.subject || '',
+        area: (q.areas || []).join(', ') || q.area || '',
+        sub_area: q.sub_area ?? '',
         tags: (q.tags || []).join(', '), marks: q.marks, text: q.question_text,
         options: (q.options || []).map((o, i) => `${LETTERS[i]}. ${o.option_text}`).join('\n'),
       });
       answerKey.addRow({
         number, qid: q.qid, answer: formatAnswer(q), marks: q.marks,
-        difficulty: q.difficulty, topic: q.topic, subtopic: q.subtopic ?? '',
+        difficulty: q.difficulty,
+        subject: q.subject ?? '', area: q.area ?? '', sub_area: q.sub_area ?? '',
         tags: (q.tags || []).join(', '),
       });
     }
@@ -236,8 +250,9 @@ function describeRules(rules) {
     if (Array.isArray(value) ? value.length : value) parts.push(`${label}: ${Array.isArray(value) ? value.join(', ') : value}`);
   };
   push('Type', rule.question_type);
-  push('Topic', rule.topic);
-  push('Subtopic', rule.subtopic);
+  push('Subject', rule.subject);
+  push('Area', rule.area);
+  push('Sub-Area', rule.sub_area);
   push('Difficulty', rule.difficulty);
   push('Include tags', rule.includeTags);
   push('Exclude tags', rule.excludeTags);
@@ -353,8 +368,10 @@ export function toAnswerKeyPdf(id) {
         .font('Helvetica').fillColor('#111').text(formatAnswer(q));
 
       doc.font('Helvetica').fontSize(8.5).fillColor('#666').text(
-        `Marks: ${entry.marks}   ·   Difficulty: ${q.difficulty}   ·   Topic: ${q.topic}` +
-        `${q.subtopic ? `   ·   Subtopic: ${q.subtopic}` : ''}` +
+        `Marks: ${entry.marks}   ·   Difficulty: ${q.difficulty}` +
+        `${q.primary?.subject ? `   ·   Subject: ${q.primary.subject}` : ''}` +
+        `${q.primary?.area ? `   ·   Area: ${q.primary.area}` : ''}` +
+        `${q.primary?.subArea ? `   ·   Sub-Area: ${q.primary.subArea}` : ''}` +
         `${q.tags?.length ? `   ·   Tags: ${q.tags.join(', ')}` : ''}`,
       );
       if (q.explanation) {

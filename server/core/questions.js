@@ -10,8 +10,9 @@ import { getDb } from '../db/index.js';
 import config from '../config.js';
 import { compileFilter, toFtsQuery } from './filterEngine.js';
 import { createRng, shuffle } from './rng.js';
+import { subAreasFor, areasFor } from './taxonomy.js';
 
-const SORTABLE = new Set(['qid', 'question_type', 'topic', 'subtopic', 'difficulty', 'marks', 'status', 'created_at']);
+const SORTABLE = new Set(['qid', 'question_type', 'difficulty', 'marks', 'status', 'created_at']);
 
 /** Number of questions matching a filter. */
 export function countMatching(filter, options = {}) {
@@ -34,7 +35,7 @@ export function listMatching(filter, options = {}) {
   const total = db.prepare(`SELECT COUNT(*) AS n FROM questions q WHERE ${where}`).get(...params).n;
   const rows = db
     .prepare(
-      `SELECT q.id, q.qid, q.question_type, q.question_text, q.topic, q.subtopic,
+      `SELECT q.id, q.qid, q.question_type, q.question_text,
               q.difficulty, q.marks, q.expected_seconds, q.status, q.created_at
          FROM questions q
         WHERE ${where}
@@ -43,7 +44,7 @@ export function listMatching(filter, options = {}) {
     )
     .all(...params, size, (pageNo - 1) * size);
 
-  const items = withDetails ? hydrate(rows) : attachTags(rows);
+  const items = withDetails ? hydrate(rows) : attachTaxonomy(attachTags(rows));
   return { items, total, page: pageNo, pageSize: size, pageCount: Math.max(1, Math.ceil(total / size)) };
 }
 
@@ -163,6 +164,65 @@ export function getQuestionsByQids(qids, { withAnswers = false } = {}) {
   return qids.map((qid) => byQid.get(qid)).filter(Boolean);
 }
 
+/**
+ * Attaches the taxonomy branches a question belongs to, in one query per batch.
+ *
+ * Each row gets `taxonomy` (the full branches), plus flattened `subjects`,
+ * `areas` and `subAreas` name arrays that the filter explainer and the UI read
+ * directly, and `primary` — the branch marked primary, used wherever a single
+ * value has to be shown (a table column, an export cell).
+ */
+export function attachTaxonomy(rows) {
+  if (!rows.length) return rows;
+  const db = getDb();
+  const ids = rows.map((r) => r.id);
+  const byQuestion = new Map(ids.map((id) => [id, []]));
+
+  for (let i = 0; i < ids.length; i += 400) {
+    const chunk = ids.slice(i, i + 400);
+    const mapped = db
+      .prepare(
+        `SELECT qt.question_id, qt.is_primary,
+                s.id AS subject_id, s.name AS subject,
+                a.id AS area_id, a.name AS area,
+                sa.id AS sub_area_id, sa.name AS sub_area
+           FROM question_taxonomy qt
+           JOIN taxonomy_subjects s ON s.id = qt.subject_id
+           JOIN taxonomy_areas a ON a.id = qt.area_id
+           LEFT JOIN taxonomy_sub_areas sa ON sa.id = qt.sub_area_id
+          WHERE qt.question_id IN (${chunk.map(() => '?').join(',')})
+          ORDER BY qt.is_primary DESC, s.position, a.position`,
+      )
+      .all(...chunk);
+
+    for (const row of mapped) {
+      byQuestion.get(row.question_id)?.push({
+        subject: row.subject,
+        subjectId: row.subject_id,
+        area: row.area,
+        areaId: row.area_id,
+        subArea: row.sub_area,
+        subAreaId: row.sub_area_id,
+        isPrimary: !!row.is_primary,
+      });
+    }
+  }
+
+  const unique = (values) => [...new Set(values.filter(Boolean))];
+
+  return rows.map((row) => {
+    const branches = byQuestion.get(row.id) || [];
+    return {
+      ...row,
+      taxonomy: branches,
+      subjects: unique(branches.map((b) => b.subject)),
+      areas: unique(branches.map((b) => b.area)),
+      subAreas: unique(branches.map((b) => b.subArea)),
+      primary: branches.find((b) => b.isPrimary) || branches[0] || null,
+    };
+  });
+}
+
 /** Attaches tags to a set of rows in one query. */
 function attachTags(rows) {
   if (!rows.length) return rows;
@@ -212,7 +272,7 @@ export function hydrate(rows, { withAnswers = false } = {}) {
     }
   }
 
-  return rows.map((r) => {
+  const shaped = rows.map((r) => {
     const options = (optMap.get(r.id) || []).map((o) => ({
       id: o.id,
       position: o.position,
@@ -232,6 +292,8 @@ export function hydrate(rows, { withAnswers = false } = {}) {
     }
     return base;
   });
+
+  return attachTaxonomy(shaped);
 }
 
 function safeJson(value) {
@@ -253,17 +315,66 @@ export function getFacet(dimension, parent = '') {
     .all(dimension, parent);
 }
 
-export function getSubtopics(topic) {
-  if (!topic) {
-    return getDb()
+/**
+ * Facet values across every parent.
+ *
+ * Area facets are parented by subject and sub-area facets by area, so the
+ * parent-scoped `getFacet` cannot answer "all areas" — this rolls them up,
+ * keeping the parent alongside each value for display.
+ */
+export function getFacetAcrossParents(dimension) {
+  return getDb()
+    .prepare(
+      `SELECT value, parent, SUM(count) AS count FROM facet_counts
+        WHERE dimension = ? AND count > 0
+        GROUP BY value, parent
+        ORDER BY count DESC, value ASC`,
+    )
+    .all(dimension);
+}
+
+/**
+ * Areas available under the given subjects, with question counts.
+ * Falls back to the whole taxonomy when no subject is selected.
+ */
+export function getAreas(subjects = []) {
+  const counts = new Map(
+    getDb()
       .prepare(
-        `SELECT value, SUM(count) AS count FROM facet_counts
-          WHERE dimension = 'subtopic' AND count > 0 AND value <> ''
-          GROUP BY value ORDER BY count DESC, value ASC`,
+        `SELECT parent, value, count FROM facet_counts WHERE dimension = 'area' AND count > 0`,
       )
-      .all();
-  }
-  return getFacet('subtopic', topic).filter((r) => r.value !== '');
+      .all()
+      .map((r) => [`${r.parent}\u0000${r.value}`, r.count]),
+  );
+  return areasFor(subjects)
+    .map((area) => ({
+      value: area.name,
+      subject: area.subject,
+      id: area.id,
+      count: counts.get(`${area.subject}\u0000${area.name}`) || 0,
+    }))
+    .sort((a, b) => b.count - a.count || a.value.localeCompare(b.value));
+}
+
+/** Sub-areas available under the given areas, with question counts. */
+export function getSubAreas(areas = []) {
+  const counts = new Map(
+    getDb()
+      .prepare(
+        `SELECT parent, value, count FROM facet_counts WHERE dimension = 'sub_area' AND count > 0`,
+      )
+      .all()
+      .map((r) => [`${r.parent}\u0000${r.value}`, r.count]),
+  );
+  return subAreasFor(areas)
+    .map((subArea) => ({
+      value: subArea.name,
+      area: subArea.area,
+      subject: subArea.subject,
+      id: subArea.id,
+      count: counts.get(`${subArea.area}\u0000${subArea.name}`) || 0,
+    }))
+    .sort((a, b) => b.count - a.count || a.value.localeCompare(b.value));
 }
 
 export function bankStatistics() {
@@ -275,10 +386,16 @@ export function bankStatistics() {
     byType: toMap(getFacet('question_type')),
     byDifficulty: toMap(getFacet('difficulty')),
     byStatus: toMap(getFacet('status')),
-    byTopic: getFacet('topic'),
+    bySubject: getFacet('subject'),
+    byArea: getFacetAcrossParents('area').slice(0, 60),
     byTag: getFacet('tag').slice(0, 60),
-    totalTopics: getFacet('topic').length,
+    totalSubjects: getFacet('subject').length,
+    totalAreas: getFacetAcrossParents('area').length,
+    totalSubAreas: getFacetAcrossParents('sub_area').length,
     totalTags: getFacet('tag').length,
+    // A question mapped to several branches is counted once here and once per
+    // branch in the facets above, so the two totals differ by design.
+    mappedQuestions: db.prepare('SELECT COUNT(DISTINCT question_id) AS n FROM question_taxonomy').get().n,
   };
 }
 

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import QuestionModal from './QuestionModal.jsx';
-import { Badge, DifficultyBadge, Alert, Card } from './ui.jsx';
+import { Badge, DifficultyBadge, Alert, Card, TaxonomyBadges } from './ui.jsx';
 
 export default function PreviewPanel({ preview, sections, onRegenerate, busy }) {
   const [openQid, setOpenQid] = useState(null);
@@ -92,8 +92,7 @@ export default function PreviewPanel({ preview, sections, onRegenerate, busy }) 
                       <>
                         <Badge>{entry.question.question_type}</Badge>
                         <DifficultyBadge level={entry.question.difficulty} />
-                        <Badge>{entry.question.topic}</Badge>
-                        {entry.question.subtopic && <span className="faint small">{entry.question.subtopic}</span>}
+                        <TaxonomyBadges question={entry.question} />
                       </>
                     )}
                     <span className="faint small">{entry.marks} mark{entry.marks === 1 ? '' : 's'}</span>
@@ -113,8 +112,9 @@ export default function PreviewPanel({ preview, sections, onRegenerate, busy }) 
 function describeRule(rule) {
   const parts = [];
   if (rule.question_type?.length) parts.push(rule.question_type.join('/'));
-  if (rule.topic?.length) parts.push(rule.topic.join(', '));
-  if (rule.subtopic?.length) parts.push(rule.subtopic.join(', '));
+  if (rule.subject?.length) parts.push(rule.subject.join(', '));
+  if (rule.area?.length) parts.push(rule.area.join(', '));
+  if (rule.sub_area?.length) parts.push(rule.sub_area.join(', '));
   if (rule.difficulty?.length) parts.push(rule.difficulty.join('/'));
   if (rule.includeTags?.length) parts.push(`+${rule.includeTags.join(', ')}`);
   if (rule.excludeTags?.length) parts.push(`−${rule.excludeTags.join(', ')}`);

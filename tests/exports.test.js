@@ -101,8 +101,9 @@ test('the student PDF contains the paper and never the answers', async () => {
   const text = extractPdfText(pdf);
   assert.match(text, /Advanced DSA Assessment/, 'the title must be rendered');
   assert.match(text, /Instructions/);
-  assert.match(text, /Arrays/);
+  assert.match(text, /Operating Systems/, 'section headings are rendered');
   assert.match(text, /Coding/);
+  assert.match(text, /Databases/);
   assert.match(text, /Q1\./, 'questions must be numbered');
   assert.match(text, /Q11\./, 'every question must appear');
 
@@ -141,7 +142,8 @@ test('the answer key is a separate document and is not served to viewers', async
   const text = extractPdfText(buffer);
   assert.match(text, /Answer Key/);
   assert.match(text, /Answer:/);
-  assert.match(text, /Marks:.*Difficulty:.*Topic:/s);
+  // The key carries the full taxonomy path for each question.
+  assert.match(text, /Marks:.*Difficulty:.*Subject:.*Area:/s);
   assert.ok(text.includes(stored.sections[0].questions[0].qid), 'the key always identifies the QID');
 
   const viewerToken = await http.login('viewer@example.com', 'Viewer@12345');
