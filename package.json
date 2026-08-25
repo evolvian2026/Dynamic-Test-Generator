@@ -1,0 +1,45 @@
+{
+  "name": "dynamic-test-generator",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Production-ready platform that generates tests dynamically from a QID-based question bank.",
+  "type": "module",
+  "engines": { "node": ">=20.11" },
+  "main": "server/index.js",
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "concurrently -k -n api,web -c blue,magenta \"node --watch server/index.js\" \"vite --config client/vite.config.js\"",
+    "dev:api": "node --watch server/index.js",
+    "dev:web": "vite --config client/vite.config.js",
+    "build": "vite build --config client/vite.config.js",
+    "preview": "vite preview --config client/vite.config.js",
+    "migrate": "node server/db/migrate.js",
+    "seed": "node server/db/seed.js",
+    "reset": "node server/db/reset.js",
+    "test": "node --test 'tests/*.test.js'",
+    "test:watch": "node --test --watch 'tests/*.test.js'",
+    "lint": "node --check server/index.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.2",
+    "better-sqlite3": "^12.6.0",
+    "compression": "^1.8.1",
+    "cookie-parser": "^1.4.7",
+    "exceljs": "^4.4.0",
+    "express": "^5.2.1",
+    "express-rate-limit": "^8.4.0",
+    "helmet": "^8.1.0",
+    "jsonwebtoken": "^9.0.3",
+    "morgan": "^1.11.0",
+    "pdfkit": "^0.18.0",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^5.1.1",
+    "concurrently": "^9.2.1",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "react-router-dom": "^7.18.2",
+    "vite": "^8.2.2"
+  }
+}
