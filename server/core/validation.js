@@ -119,12 +119,21 @@ export function validateTestDefinition(test, sections, options = {}) {
   });
 
   // Duplicate QIDs (spec §9) — checked against the concrete selection.
+  //
+  // Duplicate prevention is a configurable option that defaults to ON. When the
+  // user has deliberately switched it off, a repeated QID is what they asked
+  // for, so it is reported as a warning rather than blocking the save.
   if (selection) {
+    const preventDuplicates = test?.prevent_duplicates === undefined
+      ? true
+      : Boolean(test.prevent_duplicates);
+    const noteDuplicate = preventDuplicates ? add : warn;
+
     const seen = new Map();
     for (const section of selection.sections || []) {
       for (const q of section.questions || []) {
         if (seen.has(q.qid)) {
-          add('duplicates', `${q.qid} appears in both "${seen.get(q.qid)}" and "${section.sectionName}".`, section.sectionName);
+          noteDuplicate('duplicates', `${q.qid} appears in both "${seen.get(q.qid)}" and "${section.sectionName}".`, section.sectionName);
         } else {
           seen.set(q.qid, section.sectionName);
         }

@@ -11,13 +11,21 @@ import { audit } from '../services/testService.js';
 
 const router = Router();
 
-// Throttles credential stuffing without affecting normal use.
+/**
+ * Throttles credential stuffing without affecting normal use.
+ *
+ * Only failed attempts count towards the budget. Counting successful sign-ins
+ * too would lock out everyone behind a shared egress IP — a NAT'd office hits
+ * 20 legitimate logins in 15 minutes routinely — which is a denial of service
+ * against real users, not a defence against brute force.
+ */
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   limit: 20,
+  skipSuccessfulRequests: true,
   standardHeaders: 'draft-7',
   legacyHeaders: false,
-  message: { error: { message: 'Too many sign-in attempts. Try again in a few minutes.' } },
+  message: { error: { message: 'Too many failed sign-in attempts. Try again in a few minutes.' } },
 });
 
 const loginSchema = z.object({

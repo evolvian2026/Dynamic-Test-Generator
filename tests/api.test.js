@@ -374,6 +374,15 @@ test('deactivating a user invalidates their existing token immediately', async (
   assert.equal((await http.get('/api/tests', { token })).status, 401, 'the token must stop working at once');
 });
 
+test('successful sign-ins do not consume the brute-force budget', async () => {
+  // Counting successes would lock out everyone behind a shared egress IP: a
+  // NAT'd office reaches 20 legitimate logins in 15 minutes routinely.
+  for (let i = 0; i < 24; i += 1) {
+    const result = await http.post('/api/auth/login', { email: 'admin@test.local', password: 'Admin@12345' });
+    assert.equal(result.status, 200, `sign-in ${i + 1} of 24 was throttled`);
+  }
+});
+
 test('every write is recorded in the audit log', async () => {
   await http.post('/api/tests', sampleTest(), { token: adminToken });
   const audit = await http.get('/api/analytics/audit?limit=20', { token: adminToken });

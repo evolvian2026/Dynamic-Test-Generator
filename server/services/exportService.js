@@ -111,9 +111,24 @@ export function toCsv(id, { includeAnswers = true } = {}) {
   return rows.map((row) => row.map(csvCell).join(',')).join('\r\n');
 }
 
+/**
+ * Renders one CSV cell.
+ *
+ * Values that begin with =, +, - or @ are prefixed with a tab, because
+ * spreadsheets treat such a cell as a formula: a test named `=cmd|'/c calc'!A1`
+ * would otherwise execute when the export is opened. The tab keeps the text
+ * intact and visible while stopping evaluation. Leading control characters get
+ * the same treatment, since they can be used to smuggle a formula past a naive
+ * check.
+ */
+const FORMULA_PREFIX = /^[=+\-@\t\r]/;
+const PLAIN_NUMBER = /^-?\d+(\.\d+)?$/;
+
 function csvCell(value) {
-  const text = value === null || value === undefined ? '' : String(value);
-  return /[",\r\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
+  let text = value === null || value === undefined ? '' : String(value);
+  // A negative number is not a formula, so it is left alone.
+  if (FORMULA_PREFIX.test(text) && !PLAIN_NUMBER.test(text)) text = `\t${text}`;
+  return /[",\r\n\t]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
 }
 
 function formatAnswer(question) {

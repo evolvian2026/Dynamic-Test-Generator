@@ -159,6 +159,48 @@ test('a viewer\'s CSV export omits the answer columns', async () => {
   assert.ok(!header.includes('correct_answer'));
 });
 
+test('CSV neutralises spreadsheet formula injection', async () => {
+  const { toCsv } = await import('../server/services/exportService.js');
+  const { createTest } = await import('../server/services/testService.js');
+
+  // A test name that a spreadsheet would execute on open.
+  const payload = '=cmd|\'/c calc\'!A1';
+  const created = createTest({
+    user: { id: 1, role: 'admin' },
+    test: { test_name: payload, duration_minutes: 30, status: 'draft' },
+    sections: [{ section_name: '+1+1', question_count: 2, marks_per_question: 1, rule: { question_type: ['MCQ'] } }],
+    mode: 'automatic',
+    allowPartial: true,
+  });
+
+  const csv = toCsv(created.id);
+  const [header, first] = csv.trim().split('\r\n');
+  const columns = header.split(',');
+
+  // Parse the row honouring quotes, then check no cell starts a formula.
+  const cells = [];
+  let buffer = '';
+  let inQuotes = false;
+  for (let i = 0; i < first.length; i += 1) {
+    const char = first[i];
+    if (char === '"') {
+      if (inQuotes && first[i + 1] === '"') { buffer += '"'; i += 1; }
+      else inQuotes = !inQuotes;
+    } else if (char === ',' && !inQuotes) { cells.push(buffer); buffer = ''; }
+    else buffer += char;
+  }
+  cells.push(buffer);
+
+  assert.ok(!cells.some((c) => /^[=+@]/.test(c)), 'no cell may begin a formula');
+  const nameCell = cells[columns.indexOf('test_name')];
+  assert.ok(nameCell.startsWith('\t'), 'the payload is prefixed, not executed');
+  assert.ok(nameCell.includes(payload), 'the original text is preserved for the reader');
+
+  // Plain numbers must not be mangled by the guard.
+  assert.equal(cells[columns.indexOf('question_number')], '1');
+  assert.equal(cells[columns.indexOf('marks')], '1');
+});
+
 test('exporting a test that does not exist returns 404', async () => {
   const result = await http.get('/api/exports/999999/json', { token });
   assert.equal(result.status, 404);

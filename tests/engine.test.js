@@ -267,6 +267,32 @@ test('validation catches every rule the specification requires', () => {
   assert.ok(dupRules.includes('marks'));
 });
 
+test('turning duplicate prevention off allows repeats instead of blocking the save', () => {
+  const selection = {
+    sections: [
+      { sectionName: 'A', delivered: 1, marks: 1, questions: [{ qid: 'QID1' }] },
+      { sectionName: 'B', delivered: 1, marks: 1, questions: [{ qid: 'QID1' }] },
+    ],
+  };
+  const sections = [{ section_name: 'A', question_count: 1, marks_per_question: 1 }];
+
+  // Spec §9 makes duplicate prevention configurable. With it off, a repeated
+  // QID is the user's explicit choice, so it must not make the test unsavable.
+  const off = validateTestDefinition(
+    { test_name: 'T', duration_minutes: 30, prevent_duplicates: false },
+    sections, { checkAvailability: false, selection },
+  );
+  assert.equal(off.valid, true, 'a test with duplicates must save when prevention is off');
+  assert.ok(off.warnings.some((w) => w.rule === 'duplicates'), 'the repeat is still surfaced as a warning');
+
+  // Default (unset) and explicit-on both still block.
+  for (const test of [{ test_name: 'T', duration_minutes: 30 }, { test_name: 'T', duration_minutes: 30, prevent_duplicates: true }]) {
+    const on = validateTestDefinition(test, sections, { checkAvailability: false, selection });
+    assert.equal(on.valid, false);
+    assert.ok(on.errors.some((e) => e.rule === 'duplicates'));
+  }
+});
+
 test('duplicate QIDs in a selection are reported by validation', () => {
   const selection = {
     sections: [
