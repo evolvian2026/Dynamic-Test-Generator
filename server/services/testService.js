@@ -11,6 +11,7 @@ import { validateTestDefinition } from '../core/validation.js';
 import { getQuestionsByQids, countMatching } from '../core/questions.js';
 import { generateSeed } from '../core/rng.js';
 import { HttpError, notFound, badRequest, conflict } from '../middleware/errors.js';
+import { findDuplicatePairs } from '../core/similarity.js';
 
 const TEST_COLUMNS = [
   'test_name', 'description', 'course', 'duration_minutes', 'total_marks', 'instructions',
@@ -205,6 +206,12 @@ export function getTest(id, { withAnswers = false, applyRandomization = false } 
   const creator = test.created_by
     ? db.prepare('SELECT name, email FROM users WHERE id = ?').get(test.created_by)
     : null;
+  const submitter = test.submitted_by
+    ? db.prepare('SELECT name, email FROM users WHERE id = ?').get(test.submitted_by)
+    : null;
+  const reviewer = test.reviewed_by
+    ? db.prepare('SELECT name, email FROM users WHERE id = ?').get(test.reviewed_by)
+    : null;
 
   const shapedSections = sections.map((s) => {
     let questions = bySection.get(s.id) || [];
@@ -229,6 +236,15 @@ export function getTest(id, { withAnswers = false, applyRandomization = false } 
     prevent_duplicates: !!test.prevent_duplicates,
     include_qid_in_student: !!test.include_qid_in_student,
     createdBy: creator,
+    review: {
+      status: test.status,
+      submittedAt: test.submitted_at,
+      submittedBy: submitter,
+      reviewedAt: test.reviewed_at,
+      reviewedBy: reviewer,
+      notes: test.review_notes,
+      allowedTransitions: TRANSITIONS[test.status] || [],
+    },
     sections: shapedSections,
     summary: summarize(test, shapedSections),
   };
@@ -509,6 +525,129 @@ function listSummary(id) {
 }
 
 /* ------------------------------------------------------------------ *
+ * Review and approval
+ * ------------------------------------------------------------------ */
+
+/**
+ * Allowed status moves.
+ *
+ * The point of the workflow is that publishing is gated on someone other than
+ * the author signing the test off, so `published` is reachable only from
+ * `approved`.
+ */
+const TRANSITIONS = {
+  draft: ['review', 'archived'],
+  review: ['approved', 'draft', 'archived'],
+  approved: ['published', 'draft', 'archived'],
+  published: ['archived', 'draft'],
+  archived: ['draft'],
+};
+
+export function canTransition(from, to) {
+  return (TRANSITIONS[from] || []).includes(to);
+}
+
+/** Submits a draft for review. */
+export function submitForReview(id, user, { note = null } = {}) {
+  const db = getDb();
+  const test = getTestRow(id);
+  if (!test) throw notFound('Test not found');
+  if (!canTransition(test.status, 'review')) {
+    throw conflict(`A test in "${test.status}" cannot be submitted for review.`);
+  }
+  if (!db.prepare('SELECT COUNT(*) AS n FROM test_questions WHERE test_id = ?').get(test.id).n) {
+    throw conflict('An empty test cannot be submitted for review.');
+  }
+
+  db.prepare(
+    `UPDATE tests SET status = 'review', submitted_at = datetime('now'), submitted_by = ?,
+                      review_notes = ?, reviewed_at = NULL, reviewed_by = NULL,
+                      updated_at = datetime('now')
+      WHERE id = ?`,
+  ).run(user.id, note, test.id);
+
+  audit(user.id, 'test.submitForReview', 'test', String(test.id), { note });
+  return getTest(test.id);
+}
+
+/**
+ * Approves or rejects a test under review.
+ *
+ * The author cannot approve their own test — that is the entire value of the
+ * step, and enforcing it here means it holds regardless of role.
+ */
+export function reviewTest(id, user, { approve, note = null }) {
+  const db = getDb();
+  const test = getTestRow(id);
+  if (!test) throw notFound('Test not found');
+  if (test.status !== 'review') throw conflict(`Only a test under review can be ${approve ? 'approved' : 'rejected'}.`);
+  if (test.created_by === user.id) {
+    throw conflict('A test cannot be approved by the person who created it. Ask another reviewer.');
+  }
+
+  const next = approve ? 'approved' : 'draft';
+  db.prepare(
+    `UPDATE tests SET status = ?, reviewed_at = datetime('now'), reviewed_by = ?,
+                      review_notes = ?, updated_at = datetime('now')
+      WHERE id = ?`,
+  ).run(next, user.id, note, test.id);
+
+  audit(user.id, approve ? 'test.approve' : 'test.reject', 'test', String(test.id), { note });
+  return getTest(test.id);
+}
+
+/** Publishes an approved test. */
+export function publishTest(id, user) {
+  const db = getDb();
+  const test = getTestRow(id);
+  if (!test) throw notFound('Test not found');
+  if (test.status === 'published') return getTest(test.id);
+  if (!canTransition(test.status, 'published')) {
+    throw conflict(
+      test.status === 'draft' || test.status === 'review'
+        ? 'A test must be approved before it can be published.'
+        : `A test in "${test.status}" cannot be published.`,
+    );
+  }
+
+  db.prepare(`UPDATE tests SET status = 'published', updated_at = datetime('now') WHERE id = ?`).run(test.id);
+  audit(user.id, 'test.publish', 'test', String(test.id), null);
+  return getTest(test.id);
+}
+
+/** Editing an approved or published test sends it back for review. */
+function invalidateApproval(db, testDbId) {
+  const test = db.prepare('SELECT status FROM tests WHERE id = ?').get(testDbId);
+  if (test && (test.status === 'approved' || test.status === 'published')) {
+    db.prepare(
+      `UPDATE tests SET status = 'draft', reviewed_at = NULL, reviewed_by = NULL,
+                        review_notes = 'Reset to draft because the questions changed after approval.'
+        WHERE id = ?`,
+    ).run(testDbId);
+    return true;
+  }
+  return false;
+}
+
+/**
+ * Near-duplicate questions within one test.
+ *
+ * Duplicate prevention works on QID, so two different QIDs carrying the same
+ * question both pass it. This is the check that catches that.
+ */
+export function duplicateWarnings(testDbId, { threshold = 0.6 } = {}) {
+  const db = getDb();
+  const rows = db
+    .prepare(
+      `SELECT q.qid, q.question_text FROM test_questions tq
+         JOIN questions q ON q.id = tq.question_id
+        WHERE tq.test_id = ?`,
+    )
+    .all(testDbId);
+  return findDuplicatePairs(rows, { threshold });
+}
+
+/* ------------------------------------------------------------------ *
  * Question-level editing (hybrid mode, spec §8, §12)
  * ------------------------------------------------------------------ */
 
@@ -563,6 +702,7 @@ export function replaceQuestion(testDbId, testQuestionId, newQid, user) {
     `UPDATE test_questions SET qid = ?, question_id = ?, selection_reason = ? WHERE id = ?`,
   ).run(newQid, question.id, JSON.stringify({ ...reason, bucket: 'manual-replacement', replacedFrom: entry.qid }), testQuestionId);
 
+  invalidateApproval(db, testDbId);
   audit(user.id, 'test.replaceQuestion', 'test', String(testDbId), { from: entry.qid, to: newQid });
   return getTest(testDbId);
 }
@@ -650,6 +790,8 @@ export function reorderSection(testDbId, sectionId, orderedIds, user) {
 }
 
 function syncSectionCounts(db, testDbId) {
+  // Any change to the questions undoes the sign-off it was given.
+  invalidateApproval(db, testDbId);
   db.prepare(
     `UPDATE test_sections
         SET question_count = (SELECT COUNT(*) FROM test_questions tq WHERE tq.section_id = test_sections.id)

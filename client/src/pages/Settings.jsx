@@ -1,6 +1,6 @@
 /** Settings — account, roles and user administration (spec §29). */
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { TopBar } from '../App.jsx';
 import api from '../lib/api.js';
 import { useAsync } from '../lib/hooks.js';
@@ -108,6 +108,8 @@ export default function Settings() {
           </p>
         </Card>
 
+        {can('settings:write') && <Branding />}
+
         {can('users:read') && (
           <Card
             title="Users"
@@ -170,6 +172,114 @@ export default function Settings() {
 
       {newUserOpen && <NewUserModal onClose={() => setNewUserOpen(false)} onCreated={() => { setNewUserOpen(false); reloadUsers(); }} />}
     </>
+  );
+}
+
+/**
+ * Branding printed on exported papers.
+ *
+ * Kept installation-wide rather than per-test: the institution does not change
+ * between papers, and asking for it on every export is how a logo ends up on
+ * half the tests and missing from the other half.
+ */
+function Branding() {
+  const toast = useToast();
+  const { data, reload } = useAsync(() => api.settings.get(), []);
+  const [form, setForm] = useState(null);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    if (data) setForm({
+      institution_name: data.institution_name || '',
+      paper_footer: data.paper_footer || '',
+      institution_logo: data.institution_logo || null,
+    });
+  }, [data]);
+
+  if (!form) return <Card title="Paper branding" className="mb-2"><Spinner label="Loading settings…" /></Card>;
+
+  const readLogo = (file) => {
+    setError(null);
+    if (file.size > 1_000_000) {
+      setError('That image is larger than about 1 MB. Use a smaller PNG or JPEG.');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => setForm((f) => ({ ...f, institution_logo: String(reader.result) }));
+    reader.onerror = () => setError('That file could not be read.');
+    reader.readAsDataURL(file);
+  };
+
+  const save = async (event) => {
+    event.preventDefault();
+    setBusy(true);
+    setError(null);
+    try {
+      await api.settings.update({
+        institution_name: form.institution_name.trim() || null,
+        paper_footer: form.paper_footer.trim() || null,
+        institution_logo: form.institution_logo,
+      });
+      toast.success('Branding updated. New PDF exports will use it.');
+      reload();
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <Card title="Paper branding" className="mb-2">
+      {error && <Alert variant="error">{error}</Alert>}
+      <form onSubmit={save}>
+        <div className="field">
+          <label htmlFor="inst-name">Institution name</label>
+          <input
+            id="inst-name" type="text" maxLength={200} placeholder="Evolvian Institute of Technology"
+            value={form.institution_name}
+            onChange={(e) => setForm({ ...form, institution_name: e.target.value })}
+          />
+          <span className="field-hint">Printed above the test title on exported question papers.</span>
+        </div>
+
+        <div className="field">
+          <label htmlFor="inst-footer">Paper footer</label>
+          <input
+            id="inst-footer" type="text" maxLength={300} placeholder="Confidential — for internal assessment only"
+            value={form.paper_footer}
+            onChange={(e) => setForm({ ...form, paper_footer: e.target.value })}
+          />
+          <span className="field-hint">Printed beside the page number on every page.</span>
+        </div>
+
+        <div className="field">
+          <label htmlFor="inst-logo">Logo</label>
+          <input
+            id="inst-logo" type="file" accept="image/png,image/jpeg"
+            onChange={(e) => e.target.files?.[0] && readLogo(e.target.files[0])}
+          />
+          <span className="field-hint">
+            PNG or JPEG, under about 1 MB. The image is embedded in the database, so exports never
+            reach out to a remote URL.
+          </span>
+        </div>
+
+        {form.institution_logo && (
+          <div className="flex-gap mb-2" style={{ alignItems: 'center' }}>
+            <span className="logo-preview"><img src={form.institution_logo} alt="Institution logo preview" /></span>
+            <button type="button" className="btn btn-xs" onClick={() => setForm({ ...form, institution_logo: null })}>
+              Remove logo
+            </button>
+          </div>
+        )}
+
+        <button type="submit" className="btn btn-primary" disabled={busy}>
+          {busy ? 'Saving…' : 'Save branding'}
+        </button>
+      </form>
+    </Card>
   );
 }
 

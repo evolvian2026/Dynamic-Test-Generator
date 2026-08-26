@@ -4,6 +4,7 @@ import { useState } from 'react';
 import FilterPanel from './FilterPanel.jsx';
 import RuleBuilder from './RuleBuilder.jsx';
 import Availability from './Availability.jsx';
+import { SetPicker } from './SavedSets.jsx';
 import { DistributionBar } from './ui.jsx';
 
 const DIFFICULTIES = ['Easy', 'Medium', 'Hard'];
@@ -12,6 +13,10 @@ export default function SectionEditor({ meta, section, index, onChange, onRemove
   const [tab, setTab] = useState('filters');
   const patch = (changes) => onChange({ ...section, ...changes });
   const patchRule = (rule) => patch({ rule });
+  const rule = section.rule || {};
+  const hasExposure = Boolean(
+    rule.neverUsed || rule.usedWithinDays || rule.maxUsageCount !== undefined || (rule.notUsedInTests || []).length,
+  );
 
   const distribution = section.distribution;
   const distributionValues = distribution?.values || {};
@@ -137,7 +142,7 @@ export default function SectionEditor({ meta, section, index, onChange, onRemove
         </div>
 
         <div className="steps mb-2">
-          {[['filters', 'Selection Rules'], ['distribution', 'Distribution'], ['advanced', 'Advanced Rule']].map(([key, label]) => (
+          {[['filters', 'Selection Rules'], ['distribution', 'Distribution'], ['exposure', 'Exposure'], ['advanced', 'Advanced Rule']].map(([key, label]) => (
             <button
               key={key}
               type="button"
@@ -146,13 +151,17 @@ export default function SectionEditor({ meta, section, index, onChange, onRemove
             >
               {label}
               {key === 'distribution' && distribution && <span className="badge badge-brand">on</span>}
+              {key === 'exposure' && hasExposure && <span className="badge badge-brand">on</span>}
               {key === 'advanced' && section.rule?.advanced && <span className="badge badge-brand">on</span>}
             </button>
           ))}
         </div>
 
         {tab === 'filters' && (
-          <FilterPanel meta={meta} rule={section.rule || {}} onChange={patchRule} compact />
+          <>
+            <SetPicker onApply={(filter) => patchRule({ ...(filter || {}), advanced: section.rule?.advanced ?? (filter || {}).advanced ?? null })} />
+            <FilterPanel meta={meta} rule={section.rule || {}} onChange={patchRule} compact />
+          </>
         )}
 
         {tab === 'distribution' && (
@@ -226,6 +235,63 @@ export default function SectionEditor({ meta, section, index, onChange, onRemove
                 {allocation && <DistributionBar counts={allocation} />}
               </>
             )}
+          </>
+        )}
+
+        {tab === 'exposure' && (
+          <>
+            <p className="field-hint mb-2">
+              Exposure control keeps a bank from leaking. It is measured from the tests actually generated,
+              not from a stored counter, so it stays accurate.
+            </p>
+
+            <div className="checkbox-row">
+              <input
+                id={`never-used-${index}`} type="checkbox"
+                checked={Boolean(rule.neverUsed)}
+                onChange={(e) => patchRule({ ...rule, neverUsed: e.target.checked || undefined })}
+              />
+              <label htmlFor={`never-used-${index}`}>
+                Only questions never used before
+                <span className="field-hint">Useful for a brand-new sitting where nothing may have been seen.</span>
+              </label>
+            </div>
+
+            <div className="form-row">
+              <div className="field">
+                <label htmlFor={`cooldown-${index}`}>Cooldown (days)</label>
+                <input
+                  id={`cooldown-${index}`} type="number" min="0" placeholder="—"
+                  value={rule.usedWithinDays ?? ''}
+                  onChange={(e) => patchRule({ ...rule, usedWithinDays: e.target.value === '' ? undefined : Number(e.target.value) })}
+                />
+                <span className="field-hint">Exclude anything used in a test created within this window.</span>
+              </div>
+              <div className="field">
+                <label htmlFor={`maxuse-${index}`}>Maximum previous uses</label>
+                <input
+                  id={`maxuse-${index}`} type="number" min="0" placeholder="—"
+                  value={rule.maxUsageCount ?? ''}
+                  onChange={(e) => patchRule({ ...rule, maxUsageCount: e.target.value === '' ? undefined : Number(e.target.value) })}
+                />
+                <span className="field-hint">0 is equivalent to &ldquo;never used&rdquo;.</span>
+              </div>
+            </div>
+
+            <div className="field">
+              <label htmlFor={`exclude-tests-${index}`}>Exclude questions used in these tests</label>
+              <input
+                id={`exclude-tests-${index}`} type="text" placeholder="TST00012, TST00013"
+                value={(rule.notUsedInTests || []).join(', ')}
+                onChange={(e) => patchRule({
+                  ...rule,
+                  notUsedInTests: e.target.value.split(',').map((v) => v.trim()).filter(Boolean),
+                })}
+              />
+              <span className="field-hint">
+                This is how parallel forms are built: form B excludes everything that appeared in form A.
+              </span>
+            </div>
           </>
         )}
 

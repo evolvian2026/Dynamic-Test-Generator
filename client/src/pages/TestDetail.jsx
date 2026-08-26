@@ -3,7 +3,7 @@
  * (spec §11, §12, §17, §19, §25).
  */
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { TopBar } from '../App.jsx';
 import api from '../lib/api.js';
@@ -14,6 +14,9 @@ import QuestionModal from '../components/QuestionModal.jsx';
 import ReplaceModal from '../components/ReplaceModal.jsx';
 import ExplainModal from '../components/ExplainModal.jsx';
 import AddQuestionsModal from '../components/AddQuestionsModal.jsx';
+import CoveragePanel from '../components/CoveragePanel.jsx';
+import ItemAnalyticsModal from '../components/ItemAnalyticsModal.jsx';
+import ResultsPanel from '../components/ResultsPanel.jsx';
 import {
   Card, Stat, Badge, DifficultyBadge, DistributionBar, Alert, Spinner, Modal, statusVariant,
   TaxonomyBadges,
@@ -33,8 +36,17 @@ export default function TestDetail() {
   const [moveTarget, setMoveTarget] = useState(null);
   const [versionsOpen, setVersionsOpen] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [analyticsQid, setAnalyticsQid] = useState(null);
+  const [reviewNote, setReviewNote] = useState('');
+  const [exportOptions, setExportOptions] = useState({ columns: '1', pageBreaks: false, answerSpace: true, branding: true });
+  const [dupWarnings, setDupWarnings] = useState(null);
 
   const editable = test && can('tests:write') && (can('tests:read:all') || test.created_by === user.id);
+
+  useEffect(() => {
+    if (!test) return;
+    api.tests.duplicateWarnings(test.id).then((d) => setDupWarnings(d.pairs)).catch(() => setDupWarnings([]));
+  }, [test?.id, test?.updated_at]);
 
   const act = async (label, fn) => {
     setBusy(true);
@@ -77,6 +89,38 @@ export default function TestDetail() {
         actions={
           <>
             <Badge variant={statusVariant(test.status)}>{test.status}</Badge>
+            {editable && test.status === 'draft' && (
+              <button
+                type="button" className="btn btn-sm" disabled={busy}
+                onClick={() => act('Submitted for review.', () => api.tests.submitForReview(test.id, reviewNote))}
+              >
+                Submit for review
+              </button>
+            )}
+            {can('tests:approve') && test.status === 'review' && (
+              <>
+                <button
+                  type="button" className="btn btn-sm btn-primary" disabled={busy}
+                  onClick={() => act('Test approved.', () => api.tests.approve(test.id, reviewNote))}
+                >
+                  ✓ Approve
+                </button>
+                <button
+                  type="button" className="btn btn-sm" disabled={busy}
+                  onClick={() => act('Sent back to draft.', () => api.tests.reject(test.id, reviewNote))}
+                >
+                  Reject
+                </button>
+              </>
+            )}
+            {editable && test.status === 'approved' && (
+              <button
+                type="button" className="btn btn-sm btn-primary" disabled={busy}
+                onClick={() => act('Test published.', () => api.tests.publish(test.id))}
+              >
+                Publish
+              </button>
+            )}
             {editable && (
               <>
                 <button
@@ -113,13 +157,44 @@ export default function TestDetail() {
 
         <div className="grid grid-2 mb-2">
           <Card title="Export" bodyClass="tight">
-            <div className="flex-gap">
-              {exportButton('pdf', '📄 Student PDF', { includeQid: test.include_qid_in_student })}
+            <div className="flex-gap mb-2">
+              {exportButton('pdf', '📄 Student PDF', {
+                includeQid: test.include_qid_in_student,
+                columns: exportOptions.columns,
+                pageBreaks: exportOptions.pageBreaks,
+                answerSpace: exportOptions.answerSpace,
+                branding: exportOptions.branding,
+              })}
               {can('tests:write') && exportButton('answer-key.pdf', '🔑 Answer Key PDF')}
               {exportButton('xlsx', '📊 Excel')}
               {exportButton('csv', '📋 CSV')}
               {exportButton('json', '{ } JSON')}
+              {exportButton('qti', '⇄ QTI 2.1')}
             </div>
+            <span className="field-label">Paper layout</span>
+            <div className="flex-gap">
+              <select
+                value={exportOptions.columns}
+                onChange={(e) => setExportOptions({ ...exportOptions, columns: e.target.value })}
+                style={{ width: 'auto' }}
+                aria-label="Columns"
+              >
+                <option value="1">Single column</option>
+                <option value="2">Two columns</option>
+              </select>
+              {[['pageBreaks', 'Page break per section'], ['answerSpace', 'Answer space'], ['branding', 'Institution branding']].map(([key, label]) => (
+                <label key={key} className="flex-gap small" style={{ cursor: 'pointer' }}>
+                  <input
+                    type="checkbox" checked={exportOptions[key]}
+                    onChange={(e) => setExportOptions({ ...exportOptions, [key]: e.target.checked })}
+                  />
+                  {label}
+                </label>
+              ))}
+            </div>
+            <p className="field-hint mt-1">
+              QTI 2.1 is an IMS content package — import it into an LMS to deliver the test and bring results back.
+            </p>
             <p className="field-hint mt-1">
               QID in the student version is currently <strong>{test.include_qid_in_student ? 'on' : 'off'}</strong>.
               {editable && (
@@ -146,8 +221,56 @@ export default function TestDetail() {
           </Card>
         </div>
 
+        {test.status === 'review' && (
+          <Alert variant="info" title="This test is awaiting review">
+            Submitted{test.review.submittedBy ? ` by ${test.review.submittedBy.name}` : ''}
+            {test.review.submittedAt ? ` on ${String(test.review.submittedAt).slice(0, 16)}` : ''}.
+            {test.review.notes && <div className="mt-1"><em>“{test.review.notes}”</em></div>}
+            {can('tests:approve') && (
+              <div className="mt-1">
+                <input
+                  type="text" placeholder="Reviewer note (optional)"
+                  value={reviewNote} onChange={(e) => setReviewNote(e.target.value)}
+                />
+              </div>
+            )}
+          </Alert>
+        )}
+        {test.status === 'approved' && (
+          <Alert variant="success" title="Approved and ready to publish">
+            Approved{test.review.reviewedBy ? ` by ${test.review.reviewedBy.name}` : ''}
+            {test.review.reviewedAt ? ` on ${String(test.review.reviewedAt).slice(0, 16)}` : ''}.
+            {test.review.notes && <div className="mt-1"><em>“{test.review.notes}”</em></div>}
+          </Alert>
+        )}
+        {test.status === 'draft' && test.review?.notes && test.review.reviewedAt && (
+          <Alert variant="warning" title="Sent back by the reviewer">
+            <em>“{test.review.notes}”</em>
+          </Alert>
+        )}
+
+        {dupWarnings?.length > 0 && (
+          <Alert variant="warning" title="This test contains near-identical questions">
+            Duplicate prevention works on QID, so these passed it — but they ask much the same thing:
+            <ul>
+              {dupWarnings.map((pair, i) => (
+                <li key={i}>
+                  <span className="mono">{pair.a}</span> and <span className="mono">{pair.b}</span> are{' '}
+                  {Math.round(pair.similarity * 100)}% similar
+                </li>
+              ))}
+            </ul>
+          </Alert>
+        )}
+
+        <CoveragePanel testId={test.id} />
+
+        <div className="mt-2">
+          <ResultsPanel testId={test.id} onOpenStats={setAnalyticsQid} />
+        </div>
+
         {test.instructions && (
-          <Card title="Instructions" className="mb-2"><p className="mb-0">{test.instructions}</p></Card>
+          <Card title="Instructions" className="mt-2 mb-2"><p className="mb-0">{test.instructions}</p></Card>
         )}
 
         {test.sections.map((section) => (
@@ -195,6 +318,9 @@ export default function TestDetail() {
                   <div className="q-actions">
                     <button type="button" className="btn btn-xs" onClick={() => setExplainTarget(entry)} title="Why was this question selected?">
                       Why?
+                    </button>
+                    <button type="button" className="btn btn-xs" onClick={() => setAnalyticsQid(entry.qid)} title="Observed performance">
+                      Stats
                     </button>
                     {editable && (
                       <>
@@ -248,6 +374,7 @@ export default function TestDetail() {
       </div>
 
       {openQid && <QuestionModal qid={openQid} onClose={() => setOpenQid(null)} withAnswers={can('tests:write')} />}
+      {analyticsQid && <ItemAnalyticsModal qid={analyticsQid} onClose={() => setAnalyticsQid(null)} />}
 
       {replaceTarget && (
         <ReplaceModal

@@ -14,6 +14,7 @@ import PDFDocument from 'pdfkit';
 import ExcelJS from 'exceljs';
 import { getTest } from './testService.js';
 import { randomizeOptions } from '../core/generator.js';
+import { getDb } from '../db/index.js';
 
 const LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
@@ -284,14 +285,66 @@ function describeRules(rules) {
 const PDF_MARGIN = 50;
 
 /**
+ * Institution branding for printed papers, from `app_settings`.
+ * A logo is stored as a data URI so exports need no filesystem access.
+ */
+export function getBranding() {
+  try {
+    const rows = getDb()
+      .prepare("SELECT key, value FROM app_settings WHERE key IN ('institution_name', 'institution_logo', 'paper_footer')")
+      .all();
+    const map = Object.fromEntries(rows.map((r) => [r.key, r.value]));
+    return {
+      institutionName: map.institution_name || null,
+      logo: map.institution_logo || null,
+      footer: map.paper_footer || null,
+    };
+  } catch {
+    return { institutionName: null, logo: null, footer: null };
+  }
+}
+
+/** Decodes a data-URI logo into a buffer pdfkit can place. */
+function logoBuffer(logo) {
+  if (!logo || typeof logo !== 'string') return null;
+  const match = logo.match(/^data:image\/(png|jpe?g);base64,(.+)$/i);
+  if (!match) return null;
+  try { return Buffer.from(match[2], 'base64'); } catch { return null; }
+}
+
+/**
  * Student paper (spec §19). Answers are never included. QIDs appear only when
  * "Include QID in Student Version" is on.
  */
-export function toStudentPdf(id, { includeQid = null } = {}) {
+/**
+ * Student paper (spec §19).
+ *
+ * Layout options make the difference between "exports a PDF" and "prints an
+ * exam": two-column saves roughly a third of the paper on option-heavy papers,
+ * a page break per section keeps sections physically separable for invigilation,
+ * and branding puts the institution on the sheet.
+ *
+ * @param {object} [options]
+ * @param {boolean|null} [options.includeQid]      override the test's own setting
+ * @param {1|2}   [options.columns]                page columns
+ * @param {boolean}[options.pageBreakBetweenSections]
+ * @param {boolean}[options.answerSpace]           leave ruled space for free-form answers
+ * @param {boolean}[options.branding]              print institution name and logo
+ */
+export function toStudentPdf(id, {
+  includeQid = null,
+  columns = 1,
+  pageBreakBetweenSections = false,
+  answerSpace = true,
+  branding = true,
+} = {}) {
   const test = loadForExport(id);
   const showQid = includeQid === null ? !!test.include_qid_in_student : includeQid;
+  const twoColumn = Number(columns) === 2;
   const doc = new PDFDocument({ size: 'A4', margin: PDF_MARGIN, bufferPages: true });
+  const brand = branding ? getBranding() : { institutionName: null, logo: null, footer: null };
 
+  if (brand.institutionName || brand.logo) brandHeader(doc, brand);
   header(doc, test.test_name, `${test.course ? `${test.course} · ` : ''}Test paper`);
 
   doc.moveDown(0.5);
@@ -309,42 +362,105 @@ export function toStudentPdf(id, { includeQid = null } = {}) {
     doc.font('Helvetica').fontSize(10).fillColor('#222').text(test.instructions, { align: 'left' });
   }
 
+  // Two-column layout is a manual flow: pdfkit has no column primitive, so the
+  // page is split into two text columns and the writer moves to the second
+  // when the first is full.
+  const layout = twoColumn ? createColumns(doc) : null;
+
   let number = 0;
-  for (const section of test.sections) {
+  test.sections.forEach((section, sectionIndex) => {
+    if (pageBreakBetweenSections && sectionIndex > 0) {
+      doc.addPage();
+      if (layout) layout.reset();
+    }
+    if (layout) layout.fullWidth();
     doc.moveDown(1.2);
     sectionHeading(doc, section);
+    if (layout) layout.begin();
 
     for (const entry of section.questions) {
       number += 1;
       const question = entry.question;
-      ensureSpace(doc, 110);
+      const needed = estimateHeight(question, answerSpace);
+
+      if (layout) layout.ensure(needed);
+      else ensureSpace(doc, Math.min(needed, 300));
+
+      const width = layout ? layout.width : undefined;
 
       doc.moveDown(0.7);
       doc.font('Helvetica-Bold').fontSize(10.5).fillColor('#111')
-        .text(`Q${number}.`, { continued: true })
+        .text(`Q${number}.`, { continued: true, width })
         .font('Helvetica').fillColor('#111')
-        .text(` ${question.question_text}`);
+        .text(` ${question.question_text}`, { width });
 
       doc.font('Helvetica-Oblique').fontSize(8.5).fillColor('#666')
-        .text(`[${question.question_type} · ${entry.marks} mark${entry.marks === 1 ? '' : 's'}${showQid ? ` · ${entry.qid}` : ''}]`);
+        .text(`[${question.question_type} · ${entry.marks} mark${entry.marks === 1 ? '' : 's'}${showQid ? ` · ${entry.qid}` : ''}]`, { width });
       doc.fillColor('#111');
 
       if (question.options?.length) {
         doc.moveDown(0.25);
         question.options.forEach((option, i) => {
-          doc.font('Helvetica').fontSize(10).text(`     ${LETTERS[i]}.  ${option.option_text}`);
+          doc.font('Helvetica').fontSize(10).text(`     ${LETTERS[i]}.  ${option.option_text}`, { width });
         });
-      } else {
-        // Answer space for free-form types (spec §19).
+      } else if (answerSpace) {
+        // Ruled space for free-form types (spec §19).
         const lines = { Coding: 12, SQL: 8, Subjective: 8, Debugging: 8, 'Output-based': 4 }[question.question_type] ?? 3;
-        answerSpace(doc, lines);
+        drawAnswerSpace(doc, lines, layout);
       }
     }
-  }
+  });
 
-  pageNumbers(doc, test.test_name);
+  if (layout) layout.fullWidth();
+  pageNumbers(doc, test.test_name, brand.footer);
   doc.end();
   return doc;
+}
+
+/** Rough height of one question, used to decide column and page breaks. */
+function estimateHeight(question, withAnswerSpace) {
+  const textLines = Math.ceil((question.question_text || '').length / 70);
+  const options = (question.options?.length || 0) * 14;
+  const answer = !question.options?.length && withAnswerSpace
+    ? ({ Coding: 12, SQL: 8, Subjective: 8, Debugging: 8, 'Output-based': 4 }[question.question_type] ?? 3) * 14
+    : 0;
+  return 34 + textLines * 13 + options + answer;
+}
+
+/**
+ * Two-column flow control.
+ *
+ * pdfkit writes in a single stream, so columns are emulated by constraining the
+ * text width and repositioning the cursor to the top of the second column when
+ * the first one fills.
+ */
+function createColumns(doc) {
+  const gutter = 22;
+  const usable = doc.page.width - PDF_MARGIN * 2;
+  const width = (usable - gutter) / 2;
+  const bottom = () => doc.page.height - PDF_MARGIN - 24;
+  let column = 0;
+  let top = doc.y;
+
+  const moveTo = (index) => {
+    column = index;
+    doc.x = PDF_MARGIN + index * (width + gutter);
+    doc.y = top;
+  };
+
+  return {
+    width,
+    begin() { top = doc.y; moveTo(0); },
+    reset() { top = doc.y; moveTo(0); },
+    fullWidth() { doc.x = PDF_MARGIN; },
+    ensure(needed) {
+      if (doc.y + needed <= bottom()) return;
+      if (column === 0) { moveTo(1); return; }
+      doc.addPage();
+      top = doc.y;
+      moveTo(0);
+    },
+  };
 }
 
 /** Answer key (spec §19) — always carries the QID and full metadata. */
@@ -447,30 +563,52 @@ function sectionHeading(doc, section) {
   doc.fillColor('#111');
 }
 
-function answerSpace(doc, lines) {
+/** Ruled writing space, column-aware. */
+function drawAnswerSpace(doc, lines, layout) {
   doc.moveDown(0.35);
-  const width = doc.page.width - PDF_MARGIN * 2 - 20;
+  const indent = layout ? 8 : 20;
+  const left = doc.x + indent;
+  const width = (layout ? layout.width : doc.page.width - PDF_MARGIN * 2) - indent - 4;
   for (let i = 0; i < lines; i += 1) {
-    ensureSpace(doc, 24);
+    if (layout) layout.ensure(24); else ensureSpace(doc, 24);
     const y = doc.y + 10;
+    const x = layout ? doc.x + indent : left;
     doc.strokeColor('#d5d9e2').lineWidth(0.6)
-      .moveTo(PDF_MARGIN + 20, y).lineTo(PDF_MARGIN + 20 + width, y).stroke();
+      .moveTo(x, y).lineTo(x + width, y).stroke();
     doc.y = y + 4;
   }
   doc.strokeColor('#000');
+}
+
+/** Institution name and logo above the test title. */
+function brandHeader(doc, brand) {
+  const image = logoBuffer(brand.logo);
+  if (image) {
+    try { doc.image(image, PDF_MARGIN, doc.y, { fit: [110, 34] }); } catch { /* unreadable image */ }
+  }
+  if (brand.institutionName) {
+    doc.font('Helvetica-Bold').fontSize(11).fillColor('#444')
+      .text(brand.institutionName, image ? PDF_MARGIN + 120 : PDF_MARGIN, doc.y + (image ? 10 : 0), {
+        width: doc.page.width - PDF_MARGIN * 2 - (image ? 120 : 0),
+        align: image ? 'left' : 'center',
+      });
+  }
+  doc.moveDown(image ? 1.4 : 0.6);
+  doc.x = PDF_MARGIN;
+  doc.fillColor('#111');
 }
 
 function ensureSpace(doc, needed) {
   if (doc.y + needed > doc.page.height - PDF_MARGIN - 20) doc.addPage();
 }
 
-function pageNumbers(doc, title) {
+function pageNumbers(doc, title, footerNote = null) {
   const range = doc.bufferedPageRange();
   for (let i = range.start; i < range.start + range.count; i += 1) {
     doc.switchToPage(i);
     const y = doc.page.height - PDF_MARGIN + 8;
     doc.font('Helvetica').fontSize(8).fillColor('#888')
-      .text(truncate(title, 70), PDF_MARGIN, y, { width: 300, lineBreak: false })
+      .text(truncate(footerNote || title, 70), PDF_MARGIN, y, { width: 300, lineBreak: false })
       .text(`Page ${i - range.start + 1} of ${range.count}`, doc.page.width - PDF_MARGIN - 120, y, {
         width: 120, align: 'right', lineBreak: false,
       });

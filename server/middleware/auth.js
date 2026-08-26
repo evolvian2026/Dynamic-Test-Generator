@@ -15,20 +15,29 @@ export const ROLES = ['admin', 'creator', 'viewer'];
 /** Capability matrix — the single source of truth for what each role may do. */
 export const PERMISSIONS = {
   admin: new Set([
-    'questions:read', 'questions:write',
+    'questions:read', 'questions:write', 'questions:import',
     'tests:read', 'tests:write', 'tests:delete', 'tests:read:all',
+    // Approval is deliberately separate from tests:write: the point of a
+    // review step is that the author is not the one who signs it off.
+    'tests:approve',
     'templates:read', 'templates:write',
+    'sets:read', 'sets:write',
+    'results:read', 'results:write',
     'exports:read', 'analytics:read',
+    'settings:write',
     'users:read', 'users:write',
   ]),
   creator: new Set([
     'questions:read',
     'tests:read', 'tests:write', 'tests:delete',
     'templates:read', 'templates:write',
+    'sets:read', 'sets:write',
+    'results:read', 'results:write',
     'exports:read', 'analytics:read',
   ]),
   viewer: new Set([
-    'questions:read', 'tests:read', 'exports:read', 'analytics:read',
+    'questions:read', 'tests:read', 'sets:read', 'results:read',
+    'exports:read', 'analytics:read',
   ]),
 };
 

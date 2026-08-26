@@ -76,6 +76,52 @@ export const api = {
     count: (payload, signal) => post('/questions/count', payload, { signal }),
     lookup: (qids, withAnswers = false) => post('/questions/lookup', { qids, withAnswers }),
     byQid: (qid, withAnswers = false) => get(`/questions/${encodeURIComponent(qid)}?withAnswers=${withAnswers}`),
+
+    // Authoring
+    create: (payload) => post('/questions', payload),
+    update: (qid, payload) => patch(`/questions/${encodeURIComponent(qid)}`, payload),
+    retire: (qid) => del(`/questions/${encodeURIComponent(qid)}`),
+    remove: (qid) => del(`/questions/${encodeURIComponent(qid)}?hard=true`),
+
+    // Bulk import
+    importTemplate: () => get('/questions/import/template'),
+    importPreview: (rows, options = {}) => post('/questions/import/preview', { rows, ...options }),
+    importCommit: (items, options = {}) => post('/questions/import/commit', { items, ...options }),
+
+    // Near-duplicates
+    duplicates: (params = {}) => get(`/questions/duplicates?${new URLSearchParams(params)}`),
+    reindexDuplicates: () => post('/questions/duplicates/reindex', {}),
+    similar: (qid, params = {}) => get(`/questions/${encodeURIComponent(qid)}/similar?${new URLSearchParams(params)}`),
+
+    // Exposure
+    exposureOverview: (params = {}) => get(`/questions/exposure/overview?${new URLSearchParams(params)}`),
+    usage: (qid) => get(`/questions/${encodeURIComponent(qid)}/usage`),
+
+    // Item analytics
+    analytics: (qid) => get(`/questions/${encodeURIComponent(qid)}/analytics`),
+  },
+
+  sets: {
+    list: () => get('/sets'),
+    get: (id) => get(`/sets/${id}`),
+    questions: (id, params = {}) => get(`/sets/${id}/questions?${new URLSearchParams(params)}`),
+    create: (payload) => post('/sets', payload),
+    update: (id, payload) => put(`/sets/${id}`, payload),
+    remove: (id) => del(`/sets/${id}`),
+  },
+
+  results: {
+    ingestAttempts: (testId, attempts) => post(`/results/tests/${testId}/attempts`, { attempts }),
+    ingestRows: (testId, rows) => post(`/results/tests/${testId}/responses`, { rows }),
+    forTest: (testId) => get(`/results/tests/${testId}/results`),
+    clear: (testId) => del(`/results/tests/${testId}/attempts`),
+    itemOverview: (params = {}) => get(`/results/items/overview?${new URLSearchParams(params)}`),
+    recompute: () => post('/results/items/recompute', {}),
+  },
+
+  settings: {
+    get: () => get('/settings'),
+    update: (payload) => put('/settings', payload),
   },
 
   tests: {
@@ -103,6 +149,17 @@ export const api = {
     removeQuestion: (id, testQuestionId) => del(`/tests/${id}/questions/${testQuestionId}`),
     moveQuestion: (id, testQuestionId, sectionId) => post(`/tests/${id}/questions/${testQuestionId}/move`, { sectionId }),
     reorder: (id, sectionId, orderedIds) => post(`/tests/${id}/sections/${sectionId}/reorder`, { orderedIds }),
+
+    // Review workflow
+    submitForReview: (id, note) => post(`/tests/${id}/submit-review`, { note: note || null }),
+    approve: (id, note) => post(`/tests/${id}/approve`, { note: note || null }),
+    reject: (id, note) => post(`/tests/${id}/reject`, { note: note || null }),
+    publish: (id) => post(`/tests/${id}/publish`, {}),
+
+    // Coverage and duplicate warnings
+    coverage: (id, axis = 'difficulty') => get(`/tests/${id}/coverage?axis=${encodeURIComponent(axis)}`),
+    coverageAxes: (id) => get(`/tests/${id}/coverage/axes`),
+    duplicateWarnings: (id) => get(`/tests/${id}/duplicate-warnings`),
   },
 
   templates: {

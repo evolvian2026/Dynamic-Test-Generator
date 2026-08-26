@@ -15,6 +15,9 @@ import templateRoutes from './routes/templates.js';
 import exportRoutes from './routes/exports.js';
 import analyticsRoutes from './routes/analytics.js';
 import userRoutes from './routes/users.js';
+import setRoutes from './routes/sets.js';
+import resultRoutes from './routes/results.js';
+import settingsRoutes from './routes/settings.js';
 
 export function createApp() {
   const app = express();
@@ -42,7 +45,9 @@ export function createApp() {
     }),
   );
   app.use(compression());
-  app.use(express.json({ limit: '2mb' }));
+  // Results files and import previews carry many rows, so the body limit is
+  // generous; the routes themselves cap row counts.
+  app.use(express.json({ limit: '25mb' }));
   app.use(cookieParser());
   if (config.env !== 'test') app.use(morgan(config.isProduction ? 'combined' : 'dev'));
 
@@ -68,6 +73,9 @@ export function createApp() {
   app.use('/api/exports', exportRoutes);
   app.use('/api/analytics', analyticsRoutes);
   app.use('/api/users', userRoutes);
+  app.use('/api/sets', setRoutes);
+  app.use('/api/results', resultRoutes);
+  app.use('/api/settings', settingsRoutes);
 
   app.use('/api', notFoundHandler);
 

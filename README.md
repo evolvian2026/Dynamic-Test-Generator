@@ -14,7 +14,10 @@ Subject  →  Area / Topic  →  Sub-Area / Sub-Topic (optional)  →  Tags (opt
 A QID may be mapped to **one or more** branches of that tree. The shipped taxonomy
 holds **35 subjects, 293 areas, 18 sub-areas and 2,294 tags**.
 
-The application never authors questions. It only selects them.
+The application never authors questions **for** you — nothing is invented, and no
+question text is generated. It does let you author, import, review and retire the
+questions the bank holds, and it measures how those questions behave once real
+candidates have answered them.
 
 ---
 
@@ -24,6 +27,7 @@ The application never authors questions. It only selects them.
 - [How it works](#how-it-works)
 - [The taxonomy](#the-taxonomy)
 - [Feature map](#feature-map)
+- [Beyond the specification](#beyond-the-specification)
 - [Architecture](#architecture)
 - [Data model](#data-model)
 - [The filter engine](#the-filter-engine)
@@ -227,6 +231,47 @@ Every numbered requirement from the specification, and where it lives.
 | 28 | Future metadata extensibility | `server/core/metadata.js`, `question_attributes` |
 | 29 | Role-based access control | `server/middleware/auth.js` |
 | 30 | Separation of concerns | four distinct tables, no content duplication |
+
+---
+
+## Beyond the specification
+
+Ten capabilities the specification does not require, added because a bank that is
+only ever *read* eventually stops being trustworthy. Each is enforced server-side
+and covered by `tests/authoring.test.js` and `tests/assessment.test.js`.
+
+| Capability | Why it exists | Implementation |
+|---|---|---|
+| **Question authoring** | The spec assumes the bank already exists. Without CRUD, a typo in a live question has no fix inside the product. | `services/questionService.js`, `components/QuestionEditor.jsx` |
+| **Bulk import with taxonomy matching** | Banks arrive as spreadsheets. Subjects are matched against the taxonomy — "operating systems" resolves to *Operating System* — and anything uncertain is flagged rather than guessed. | `services/importService.js`, `components/ImportWizard.jsx` |
+| **Exposure control** | Duplicate prevention works *within* a test. This stops the same questions being reused across successive papers: never-used-before, cooldown windows, usage caps, and parallel forms ("nothing that appeared in form A"). | `core/exposure.js` |
+| **Near-duplicate detection** | Duplicate prevention keys on QID, so it cannot see two *different* QIDs carrying the same question — which banks assembled from several sources are full of. Word shingles and a MinHash-style sketch find them. | `core/similarity.js`, `components/DuplicatesPanel.jsx` |
+| **Blueprint coverage** | Availability answers *can this section be filled*. Coverage answers the question a designer actually has afterwards: *did the test cover what I intended, in the proportions I intended?* | `core/coverage.js`, `components/CoveragePanel.jsx` |
+| **Response capture and item analytics** | This product does not deliver tests, but without response data no one can tell a good item from a bad one. Results are ingested from an LMS, proctoring platform or OMR scanner; each question gets a p-value, a point-biserial discrimination index and distractor analysis. | `core/itemAnalytics.js`, `routes/results.js` |
+| **QTI 2.1 export** | PDF and Excel are for humans. QTI is an IMS content package an LMS can actually deliver — which is also how responses come back. | `services/qtiService.js` |
+| **Approval workflow** | `draft → review → approved → published`, with sign-off deliberately separated from `tests:write`: nobody approves their own test, and editing the questions of an approved test revokes the approval. | `services/testService.js` |
+| **Paper layout options** | Two-column layout, page break per section, reserved answer space, and installation branding on the printed paper. | `services/exportService.js`, `routes/settings.js` |
+| **Saved question sets** | A template saves a whole test; this saves a *filter* on its own, with a live count — because a set that matched 300 questions last month may match 40 today. | `routes/sets.js`, `components/SavedSets.jsx` |
+
+Two things were deliberately **not** built:
+
+- **AI question generation.** The specification is explicit that the system
+  selects from an existing bank and never invents questions. Generating item text
+  would break that contract, not extend it.
+- **Multi-tenancy.** It touches every query and every index. It is a different
+  product shape, not a feature.
+
+### Reading the item statistics
+
+| Measure | What it is | How to read it |
+|---|---|---|
+| p-value | Share of candidates who answered correctly | Higher means *easier*. Below 0.2 or above 0.9 is flagged. |
+| Discrimination | Point-biserial correlation between getting this item right and total score | < 0.1 poor · 0.1–0.2 marginal · 0.2–0.3 acceptable · ≥ 0.3 good. **Negative means the key is probably wrong.** |
+| Difficulty flag | Observed difficulty against the authored label | `harder_than_labelled` and its opposite mark a disagreement worth resolving. |
+| Dead distractor | An option nobody ever chose | Adds length without adding discrimination. |
+
+Statistics need at least 20 responses before a question is flagged; below that
+the numbers are noise, and the API says so rather than reporting a figure.
 
 ---
 
@@ -452,10 +497,20 @@ uses the same matrix only to hide controls.
 | Edit **any** test | ✓ | own only | — |
 | Delete tests | ✓ | own only | — |
 | Manage templates | ✓ | ✓ | — |
+| Author / retire questions | ✓ | — | — |
+| Bulk-import questions | ✓ | — | — |
+| **Approve** a test for publication | ✓ | — | — |
+| Save and share question sets | ✓ | ✓ | read only |
+| Import results | ✓ | ✓ | read only |
 | Export student paper | ✓ | ✓ | ✓ |
 | Export **answer key** | ✓ | ✓ | — |
 | View analytics | ✓ | ✓ | ✓ |
+| Change installation branding | ✓ | — | — |
 | Manage users | ✓ | — | — |
+
+Approval sits behind its own `tests:approve` capability rather than `tests:write`,
+because the entire point of a review step is that the author is not the person who
+signs it off. The service refuses self-approval even for an administrator.
 
 Authentication is a JWT delivered both as an httpOnly cookie and a bearer token.
 The user record is re-read on every request, so deactivating an account or
@@ -489,6 +544,18 @@ and `/api/health`.
 | `POST` | `/questions/count` | Live availability count for a filter |
 | `POST` | `/questions/lookup` | Batch fetch by QID |
 | `GET` | `/questions/:qid` | One question (`?withAnswers=true`) |
+| `POST` | `/questions` | Author a new question (QID assigned automatically) |
+| `PATCH` | `/questions/:qid` | Update a question; omitted fields are left alone |
+| `DELETE` | `/questions/:qid` | Retire; `?hard=true` deletes, refused while a test references it |
+| `POST` | `/questions/import/preview` | Analyse a parsed file — writes nothing |
+| `POST` | `/questions/import/commit` | Write the rows the operator accepted |
+| `GET` | `/questions/import/template` | The columns an import file may contain |
+| `GET` | `/questions/duplicates` | Bank-wide near-duplicate groups (`?threshold=`) |
+| `POST` | `/questions/duplicates/reindex` | Recompute fingerprints for rows lacking one |
+| `GET` | `/questions/:qid/similar` | Near-duplicates of one question |
+| `GET` | `/questions/:qid/usage` | Which tests have used this question |
+| `GET` | `/questions/:qid/analytics` | p-value, discrimination, distractor analysis |
+| `GET` | `/questions/exposure/overview` | Reuse across the whole bank |
 
 ### Test planning
 | Method | Path | Purpose |
@@ -511,6 +578,13 @@ and `/api/health`.
 | `POST` | `/tests/:id/regenerate` | Re-run the stored rules with a new seed |
 | `POST` | `/tests/:id/versions` | Create versions A/B/C… |
 | `GET` | `/tests/:id/versions` | List the test and its versions |
+| `POST` | `/tests/:id/submit-review` | draft → review |
+| `POST` | `/tests/:id/approve` | review → approved (needs `tests:approve`) |
+| `POST` | `/tests/:id/reject` | review → draft, with the reviewer's note |
+| `POST` | `/tests/:id/publish` | approved → published |
+| `GET` | `/tests/:id/coverage` | Intended vs actual on one axis (`?axis=`, or `all`) |
+| `GET` | `/tests/:id/coverage/axes` | Axes this test can be measured on |
+| `GET` | `/tests/:id/duplicate-warnings` | Near-duplicate questions drawn into this test |
 
 ### Question-level editing
 | Method | Path | Purpose |
@@ -530,7 +604,18 @@ and `/api/health`.
 | `GET` | `/templates/blueprints` | Predefined blueprints |
 | `POST` | `/templates/blueprints/expand` | Blueprint → sections + feasibility |
 | `GET` | `/exports/:id/{json,csv,xlsx,pdf}` | Export a test |
+| `GET` | `/exports/:id/pdf?columns=2&pageBreaks=true&answerSpace=false&branding=false` | Paper layout options |
+| `GET` | `/exports/:id/qti` | QTI 2.1 IMS content package (zip) |
 | `GET` | `/exports/:id/answer-key.pdf` | Answer key (not available to viewers) |
+| `GET`/`POST`/`PUT`/`DELETE` | `/sets[/:id]` | Saved question sets, with live counts |
+| `GET` | `/sets/:id/questions` | What a saved set currently matches |
+| `POST` | `/results/tests/:id/attempts` | Ingest structured attempts |
+| `POST` | `/results/tests/:id/responses` | Ingest a flat results file (one row per response) |
+| `GET` | `/results/tests/:id/results` | Attempt and item results for one test |
+| `DELETE` | `/results/tests/:id/attempts` | Clear results and recompute |
+| `GET` | `/results/items/overview` | Bank-wide item quality |
+| `POST` | `/results/items/recompute` | Force a statistics recompute |
+| `GET`/`PUT` | `/settings` | Installation branding (admin to write) |
 | `GET` | `/analytics/overview` | Bank and test analytics |
 | `GET` | `/analytics/tests/:id` | Composition of one test |
 | `GET` | `/analytics/audit` | Audit trail (admin) |
@@ -562,7 +647,7 @@ All settings come from the environment; see `.env.example`.
 npm test
 ```
 
-81 tests across four suites, each running against a fresh temporary database
+129 tests across six suites, each running against a fresh temporary database
 seeded with 4,000 questions classified against the real taxonomy:
 
 - **`tests/engine.test.js`** — filter compilation and SQL-injection safety,
@@ -587,6 +672,22 @@ seeded with 4,000 questions classified against the real taxonomy:
   content extracted from the compressed content streams to assert that the
   student paper contains the questions but **never** the answers, and that the
   QID toggle works.
+- **`tests/authoring.test.js`** — question CRUD including the rule that a PATCH
+  omitting a field must not wipe it (Zod's `.partial()` does not suppress a
+  `.default()`), refusal to invent an unknown taxonomy branch, hard delete
+  blocked while a test references the QID, import preview writing nothing,
+  fuzzy taxonomy matching and attribute passthrough on commit, near-duplicate
+  detection catching two QIDs with the same question, and exposure rules
+  (never-used, cooldown windows) actually shrinking the eligible pool.
+- **`tests/assessment.test.js`** — the approval state machine including
+  self-approval refusal and approval revoked by a post-approval edit, blueprint
+  coverage against both a distribution and a single-value filter, every
+  advertised coverage axis, results ingestion in both shapes with re-upload
+  replacing rather than duplicating an attempt, discrimination that actually
+  separates a strong cohort from a weak one, a QTI package unzipped and checked
+  against its own manifest, each PDF layout option changing the document, saved
+  question sets with live counts and ownership rules, and branding that refuses
+  a remote logo URL.
 
 ---
 

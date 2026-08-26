@@ -50,6 +50,7 @@ export async function startServer() {
     get: (url, options) => request('GET', url, options),
     post: (url, body, options) => request('POST', url, { ...options, body }),
     patch: (url, body, options) => request('PATCH', url, { ...options, body }),
+    put: (url, body, options) => request('PUT', url, { ...options, body }),
     del: (url, options) => request('DELETE', url, options),
     raw: (url, options = {}) => fetch(`${base}${url}`, {
       headers: options.token ? { Authorization: `Bearer ${options.token}` } : {},

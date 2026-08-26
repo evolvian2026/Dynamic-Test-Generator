@@ -40,6 +40,12 @@ CREATE TABLE IF NOT EXISTS questions (
   answer_text      TEXT,
   explanation      TEXT,
   metadata         TEXT NOT NULL DEFAULT '{}',
+  -- Authoring provenance. NULL means the row predates authoring or was seeded.
+  created_by       INTEGER REFERENCES users (id) ON DELETE SET NULL,
+  updated_by       INTEGER REFERENCES users (id) ON DELETE SET NULL,
+  -- Normalised shingle fingerprint of question_text, used by near-duplicate
+  -- detection so the expensive tokenisation happens once at write time.
+  text_fingerprint TEXT,
   created_at       TEXT NOT NULL DEFAULT (datetime('now')),
   updated_at       TEXT NOT NULL DEFAULT (datetime('now'))
 );
@@ -55,6 +61,7 @@ CREATE INDEX IF NOT EXISTS idx_questions_type
 CREATE INDEX IF NOT EXISTS idx_questions_marks ON questions (marks);
 CREATE INDEX IF NOT EXISTS idx_questions_status ON questions (status);
 CREATE INDEX IF NOT EXISTS idx_questions_created ON questions (created_at);
+CREATE INDEX IF NOT EXISTS idx_questions_fingerprint ON questions (text_fingerprint);
 
 CREATE TABLE IF NOT EXISTS question_options (
   id          INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -282,8 +289,14 @@ CREATE TABLE IF NOT EXISTS tests (
   instructions            TEXT,
   starts_at               TEXT,
   ends_at                 TEXT,
+  -- Lifecycle: a test must pass review before it can be published.
   status                  TEXT NOT NULL DEFAULT 'draft'
-                            CHECK (status IN ('draft', 'published', 'archived')),
+                            CHECK (status IN ('draft', 'review', 'approved', 'published', 'archived')),
+  submitted_at            TEXT,
+  submitted_by            INTEGER REFERENCES users (id) ON DELETE SET NULL,
+  reviewed_at             TEXT,
+  reviewed_by             INTEGER REFERENCES users (id) ON DELETE SET NULL,
+  review_notes            TEXT,
   generation_mode         TEXT NOT NULL DEFAULT 'automatic'
                             CHECK (generation_mode IN ('automatic', 'manual', 'hybrid')),
   randomize_questions     INTEGER NOT NULL DEFAULT 1,
@@ -329,6 +342,9 @@ CREATE TABLE IF NOT EXISTS test_questions (
 CREATE INDEX IF NOT EXISTS idx_test_questions_test ON test_questions (test_id, section_id, question_order);
 CREATE INDEX IF NOT EXISTS idx_test_questions_qid ON test_questions (test_id, qid);
 CREATE INDEX IF NOT EXISTS idx_test_questions_question ON test_questions (question_id);
+-- Exposure control asks "when was this question last used?"; the join goes
+-- question -> test_questions -> tests.created_at.
+CREATE INDEX IF NOT EXISTS idx_test_questions_usage ON test_questions (question_id, test_id);
 
 CREATE TABLE IF NOT EXISTS test_templates (
   id            INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -352,6 +368,79 @@ CREATE TABLE IF NOT EXISTS audit_log (
 );
 CREATE INDEX IF NOT EXISTS idx_audit_entity ON audit_log (entity_type, entity_id, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_audit_user ON audit_log (user_id, created_at DESC);
+
+-- --------------------------- saved question sets ---------------------------
+-- A named, reusable filter. Sections can reference one instead of restating
+-- a complex rule, and the bank explorer can load one back.
+CREATE TABLE IF NOT EXISTS question_sets (
+  id          INTEGER PRIMARY KEY AUTOINCREMENT,
+  name        TEXT NOT NULL,
+  description TEXT,
+  filter      TEXT NOT NULL DEFAULT '{}',
+  is_shared   INTEGER NOT NULL DEFAULT 1,
+  created_by  INTEGER REFERENCES users (id) ON DELETE SET NULL,
+  created_at  TEXT NOT NULL DEFAULT (datetime('now')),
+  updated_at  TEXT NOT NULL DEFAULT (datetime('now'))
+);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_question_sets_name ON question_sets (name);
+CREATE INDEX IF NOT EXISTS idx_question_sets_owner ON question_sets (created_by);
+
+-- ------------------------- responses / item analytics -----------------------
+-- The application does not deliver tests to candidates; results are ingested
+-- from whatever does. One row per candidate sitting.
+CREATE TABLE IF NOT EXISTS test_attempts (
+  id            INTEGER PRIMARY KEY AUTOINCREMENT,
+  test_id       INTEGER NOT NULL REFERENCES tests (id) ON DELETE CASCADE,
+  candidate_ref TEXT NOT NULL,
+  started_at    TEXT,
+  submitted_at  TEXT,
+  total_score   REAL,
+  max_score     REAL,
+  source        TEXT NOT NULL DEFAULT 'import',
+  created_at    TEXT NOT NULL DEFAULT (datetime('now')),
+  UNIQUE (test_id, candidate_ref)
+);
+CREATE INDEX IF NOT EXISTS idx_attempts_test ON test_attempts (test_id, submitted_at);
+
+CREATE TABLE IF NOT EXISTS attempt_responses (
+  id            INTEGER PRIMARY KEY AUTOINCREMENT,
+  attempt_id    INTEGER NOT NULL REFERENCES test_attempts (id) ON DELETE CASCADE,
+  question_id   INTEGER NOT NULL REFERENCES questions (id) ON DELETE CASCADE,
+  qid           TEXT NOT NULL,
+  -- The option the candidate chose, when the type has options. Used for
+  -- distractor analysis; NULL for free-form types.
+  chosen_option TEXT,
+  is_correct    INTEGER,
+  score         REAL,
+  time_taken    INTEGER,
+  UNIQUE (attempt_id, question_id)
+);
+CREATE INDEX IF NOT EXISTS idx_responses_question ON attempt_responses (question_id, is_correct);
+CREATE INDEX IF NOT EXISTS idx_responses_attempt ON attempt_responses (attempt_id);
+
+-- Derived item statistics, recomputed from responses rather than trusted as
+-- input. Kept as a table so the bank explorer can filter and sort on them.
+CREATE TABLE IF NOT EXISTS question_statistics (
+  question_id       INTEGER PRIMARY KEY REFERENCES questions (id) ON DELETE CASCADE,
+  responses         INTEGER NOT NULL DEFAULT 0,
+  correct_responses INTEGER NOT NULL DEFAULT 0,
+  p_value           REAL,
+  discrimination    REAL,
+  avg_time_taken    REAL,
+  difficulty_flag   TEXT,
+  computed_at       TEXT NOT NULL DEFAULT (datetime('now'))
+);
+CREATE INDEX IF NOT EXISTS idx_qstats_p ON question_statistics (p_value);
+CREATE INDEX IF NOT EXISTS idx_qstats_disc ON question_statistics (discrimination);
+CREATE INDEX IF NOT EXISTS idx_qstats_flag ON question_statistics (difficulty_flag);
+
+-- --------------------------- application settings --------------------------
+-- Small key/value store for branding used by exports.
+CREATE TABLE IF NOT EXISTS app_settings (
+  key        TEXT PRIMARY KEY,
+  value      TEXT,
+  updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
 
 CREATE TABLE IF NOT EXISTS schema_meta (
   key   TEXT PRIMARY KEY,

@@ -7,13 +7,27 @@ import { useAsync, useDebounced } from '../lib/hooks.js';
 import FilterPanel from '../components/FilterPanel.jsx';
 import RuleBuilder from '../components/RuleBuilder.jsx';
 import QuestionModal from '../components/QuestionModal.jsx';
+import QuestionEditor from '../components/QuestionEditor.jsx';
+import ImportWizard from '../components/ImportWizard.jsx';
+import ItemAnalyticsModal from '../components/ItemAnalyticsModal.jsx';
+import DuplicatesPanel from '../components/DuplicatesPanel.jsx';
+import SavedSets from '../components/SavedSets.jsx';
+import { useAuth } from '../lib/auth.jsx';
+import { useToast } from '../components/Toast.jsx';
 import {
   Card, Stat, Badge, DifficultyBadge, BarChart, Pagination, Spinner, EmptyState, ChipSelect,
   TaxonomyPath,
 } from '../components/ui.jsx';
 
 export default function QuestionBank() {
+  const { can } = useAuth();
+  const toast = useToast();
   const [rule, setRule] = useState({});
+  const [editing, setEditing] = useState(null);     // qid | 'new'
+  const [importing, setImporting] = useState(false);
+  const [analyticsQid, setAnalyticsQid] = useState(null);
+  const [view, setView] = useState('questions');    // questions | duplicates
+  const [reloadKey, setReloadKey] = useState(0);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
   const [sort, setSort] = useState('qid');
@@ -47,7 +61,7 @@ export default function QuestionBank() {
       .catch(() => !cancelled && setResult({ items: [], total: 0, pageCount: 1, page: 1 }))
       .finally(() => !cancelled && setLoading(false));
     return () => { cancelled = true; };
-  }, [filterKey, debouncedQid, page, pageSize, sort, direction]);
+  }, [filterKey, debouncedQid, page, pageSize, sort, direction, reloadKey]);
 
   const sortBy = (column) => {
     if (sort === column) setDirection((d) => (d === 'asc' ? 'desc' : 'asc'));
@@ -61,9 +75,21 @@ export default function QuestionBank() {
         title="Question Bank"
         subtitle="Browse and filter the bank. Tests reference these QIDs — they are never copied."
         actions={
-          <button type="button" className="btn btn-sm" onClick={() => { setRule({}); setQidQuery(''); }}>
-            Clear filters
-          </button>
+          <>
+            <div className="rule-op-toggle">
+              <button type="button" className={view === 'questions' ? 'active' : ''} onClick={() => setView('questions')}>Questions</button>
+              <button type="button" className={view === 'duplicates' ? 'active' : ''} onClick={() => setView('duplicates')}>Duplicates</button>
+            </div>
+            <button type="button" className="btn btn-sm" onClick={() => { setRule({}); setQidQuery(''); }}>
+              Clear filters
+            </button>
+            {can('questions:import') && (
+              <button type="button" className="btn btn-sm" onClick={() => setImporting(true)}>⭱ Import</button>
+            )}
+            {can('questions:write') && (
+              <button type="button" className="btn btn-primary btn-sm" onClick={() => setEditing('new')}>+ New question</button>
+            )}
+          </>
         }
       />
 
@@ -85,6 +111,9 @@ export default function QuestionBank() {
           </div>
         )}
 
+        {view === 'duplicates' && <DuplicatesPanel onOpen={(qid) => setOpenQid(qid)} />}
+
+        {view === 'questions' && (
         <div className="builder" style={{ gridTemplateColumns: '330px minmax(0, 1fr)' }}>
           <div className="builder-panel">
             <Card title="Filters">
@@ -105,6 +134,10 @@ export default function QuestionBank() {
               <div className="divider" />
               <RuleBuilder meta={meta} value={rule.advanced || null} onChange={(advanced) => setRule({ ...rule, advanced })} />
             </Card>
+
+            <div className="mt-2">
+              <SavedSets rule={rule} onApply={(filter) => { setRule(filter || {}); setQidQuery(''); }} />
+            </div>
 
             {stats && (
               <Card title="Subject distribution" className="mt-2">
@@ -161,6 +194,7 @@ export default function QuestionBank() {
                         <th>Area / Sub-Area</th>
                         <th className="sortable right" onClick={() => sortBy('marks')}>Marks{arrow('marks')}</th>
                         <th className="sortable" onClick={() => sortBy('status')}>Status{arrow('status')}</th>
+                        <th />
                       </tr>
                     </thead>
                     <tbody>
@@ -191,6 +225,29 @@ export default function QuestionBank() {
                           <td>
                             <Badge variant={question.status === 'active' ? 'success' : undefined}>{question.status}</Badge>
                           </td>
+                          <td className="nowrap">
+                            <div className="flex-gap">
+                              <button type="button" className="btn btn-xs" onClick={() => setAnalyticsQid(question.qid)}>Stats</button>
+                              {can('questions:write') && (
+                                <>
+                                  <button type="button" className="btn btn-xs" onClick={() => setEditing(question.qid)}>Edit</button>
+                                  <button
+                                    type="button" className="btn btn-xs btn-ghost" title="Retire"
+                                    onClick={async () => {
+                                      if (!window.confirm(`Retire ${question.qid}? It stays in existing tests but is no longer selectable.`)) return;
+                                      try {
+                                        await api.questions.retire(question.qid);
+                                        toast.success(`${question.qid} retired.`);
+                                        setReloadKey((k) => k + 1);
+                                      } catch (e) { toast.error(e.message); }
+                                    }}
+                                  >
+                                    ✕
+                                  </button>
+                                </>
+                              )}
+                            </div>
+                          </td>
                         </tr>
                       ))}
                     </tbody>
@@ -206,9 +263,22 @@ export default function QuestionBank() {
             )}
           </Card>
         </div>
+        )}
       </div>
 
       {openQid && <QuestionModal qid={openQid} onClose={() => setOpenQid(null)} withAnswers />}
+      {editing && (
+        <QuestionEditor
+          qid={editing === 'new' ? null : editing}
+          meta={meta}
+          onClose={() => setEditing(null)}
+          onSaved={() => { setEditing(null); setReloadKey((k) => k + 1); }}
+        />
+      )}
+      {importing && (
+        <ImportWizard onClose={() => setImporting(false)} onImported={() => { setImporting(false); setReloadKey((k) => k + 1); }} />
+      )}
+      {analyticsQid && <ItemAnalyticsModal qid={analyticsQid} onClose={() => setAnalyticsQid(null)} />}
     </>
   );
 }

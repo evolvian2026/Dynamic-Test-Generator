@@ -15,6 +15,7 @@
 
 import { getField } from './metadata.js';
 import { resolveIds } from './taxonomy.js';
+import { compileExposure, hasExposureRule } from './exposure.js';
 
 export class FilterError extends Error {
   constructor(message) {
@@ -88,6 +89,10 @@ export function normalizeRule(rule = {}) {
     if (!field) continue;
     children.push({ field: key, operator: field.dataType === 'number' ? 'eq' : 'in', value: values });
   }
+
+  // Exposure control (cooldown, usage caps, parallel forms) is measured from
+  // real usage history, so it is carried as its own node rather than a field.
+  if (hasExposureRule(rule)) children.push({ exposure: rule });
 
   // A user-authored advanced tree is ANDed with the quick filters.
   if (rule.advanced && (rule.advanced.op || rule.advanced.field)) {
@@ -330,6 +335,12 @@ function compileNode(node, params, depth = 0) {
   if (!node) return '1 = 1';
 
   if (node.taxonomy) return compileTaxonomyGroup(node.taxonomy, params);
+  if (node.exposure) {
+    const { clauses, params: exposureParams } = compileExposure(node.exposure);
+    if (!clauses.length) return '1 = 1';
+    params.push(...exposureParams);
+    return `(${clauses.join(' AND ')})`;
+  }
   if (node.field) return compileLeaf(node, params);
 
   const op = String(node.op || 'AND').toUpperCase();
@@ -480,6 +491,26 @@ export function explainMatch(filter, question) {
 
   const walk = (node, negated = false) => {
     if (!node) return true;
+    if (node.exposure) {
+      // Exposure is a property of usage history, not of the question row, so
+      // it cannot be re-checked from the question alone. It is reported as an
+      // applied constraint rather than asserted.
+      const described = [];
+      if (node.exposure.neverUsed) described.push('never used in a previous test');
+      if (node.exposure.usedWithinDays) described.push(`not used in the last ${node.exposure.usedWithinDays} days`);
+      if (node.exposure.maxUsageCount !== undefined && node.exposure.maxUsageCount !== null && node.exposure.maxUsageCount !== '') {
+        described.push(`used at most ${node.exposure.maxUsageCount} time(s)`);
+      }
+      const excluded = [
+        ...(node.exposure.notUsedInTests || []),
+        ...(node.exposure.excludeUsedInTest ? [node.exposure.excludeUsedInTest] : []),
+      ];
+      if (excluded.length) described.push(`not used in ${excluded.join(', ')}`);
+      for (const criterion of described) {
+        results.push({ field: 'exposure', criterion: `Exposure: ${criterion}`, actual: 'checked against usage history', passed: true });
+      }
+      return true;
+    }
     if (node.taxonomy) {
       // Report each level separately for the audit view, but decide the match
       // on whether one branch satisfies all of them at once.

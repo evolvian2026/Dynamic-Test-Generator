@@ -484,3 +484,14 @@ table.data th.sortable:hover { color: var(--brand); }
 .criteria-mark { font-weight: 700; flex: 0 0 auto; }
 .criteria-mark.pass { color: var(--success); }
 .criteria-mark.fail { color: var(--danger); }
+
+/* Saved question sets: a name, a live count, and a way to remove it. */
+.saved-set-list { list-style: none; padding: 0; margin: 0; }
+.saved-set { display: flex; gap: 8px; align-items: flex-start; padding: 8px 0; border-bottom: 1px solid var(--border); }
+.saved-set:last-child { border-bottom: none; }
+.saved-set-main { flex: 1 1 auto; min-width: 0; }
+.saved-set .qid-link { font-family: inherit; font-size: 13px; text-align: left; }
+
+/* Branding preview on the settings page. */
+.logo-preview { display: inline-flex; align-items: center; justify-content: center; padding: 8px 10px; border: 1px dashed var(--border-strong); border-radius: var(--radius-sm); background: var(--surface-alt); }
+.logo-preview img { max-height: 56px; max-width: 220px; display: block; }

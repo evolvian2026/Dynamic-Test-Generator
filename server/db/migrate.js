@@ -6,6 +6,7 @@ import { getDb, closeDb } from './index.js';
 import config from '../config.js';
 import { loadTaxonomy } from '../core/taxonomy.js';
 import { backfillLegacyTaxonomy, hasLegacyTaxonomyColumns, dropLegacyTaxonomySchema } from './backfill.js';
+import { upgradeSchema } from './upgrade.js';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 
@@ -20,6 +21,10 @@ export function migrate({ quiet = false } = {}) {
   // insert would fail against the new schema.
   const legacy = hasLegacyTaxonomyColumns(db) ? readLegacyClassification(db) : null;
   if (legacy) dropLegacyTaxonomySchema(db);
+
+  // Reshape anything that already exists before the schema runs — it only ever
+  // creates missing objects, so it cannot widen a column or a CHECK.
+  const upgrade = upgradeSchema(db);
 
   const schema = fs.readFileSync(path.join(here, 'schema.sql'), 'utf8');
   db.exec(schema);
@@ -43,6 +48,8 @@ export function migrate({ quiet = false } = {}) {
   const admin = ensureBootstrapAdmin(db);
   if (!quiet) {
     console.log(`Schema ready at ${config.databasePath}`);
+    if (upgrade.added.length) console.log(`Added columns: ${upgrade.added.join(', ')}`);
+    for (const note of upgrade.notes) console.log(note);
     console.log(
       `Taxonomy: ${taxonomy.subjects} subjects, ${taxonomy.areas} areas, ` +
       `${taxonomy.subAreas} sub-areas, ${taxonomy.tags} tags.`,

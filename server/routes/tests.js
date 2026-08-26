@@ -9,7 +9,9 @@ import {
   createTest, getTest, getTestRow, listTests, updateTestMeta, deleteTest,
   duplicateTest, regenerateTest, createVersions, replacementOptions, replaceQuestion,
   addQuestions, removeQuestion, moveQuestion, reorderSection, explainTestQuestion,
+  submitForReview, reviewTest, publishTest, duplicateWarnings,
 } from '../services/testService.js';
+import { testCoverage, fullCoverage, COVERAGE_AXES } from '../core/coverage.js';
 import { checkTest, checkSection } from '../core/availability.js';
 import { validateTestDefinition } from '../core/validation.js';
 import { generateSelection } from '../core/generator.js';
@@ -50,7 +52,7 @@ const testMetaSchema = z.object({
   instructions: z.string().nullish(),
   starts_at: z.string().nullish(),
   ends_at: z.string().nullish(),
-  status: z.enum(['draft', 'published', 'archived']).default('draft'),
+  status: z.enum(['draft', 'review', 'approved', 'published', 'archived']).default('draft'),
   randomize_questions: z.boolean().default(true),
   randomize_options: z.boolean().default(true),
   prevent_duplicates: z.boolean().default(true),
@@ -208,6 +210,59 @@ router.get('/:id/versions', requirePermission('tests:read'), loadTest, (req, res
   res.json(listTests({ user: req.user, pageSize: 100 }).items.filter(
     (t) => t.parent_test_id === req.testRow.id || t.id === req.testRow.id,
   ));
+});
+
+/* ----------------------- review and approval ------------------------ */
+
+router.post('/:id/submit-review', requirePermission('tests:write'), loadTest, validateBody(z.object({
+  note: z.string().nullish(),
+})), (req, res) => {
+  assertCanModifyTest(req.user, req.testRow);
+  res.json(submitForReview(req.testRow.id, req.user, { note: req.body.note }));
+});
+
+/**
+ * Approving is gated on `tests:approve`, which only an admin holds — and the
+ * service additionally refuses to let anyone approve their own test.
+ */
+router.post('/:id/approve', requirePermission('tests:approve'), loadTest, validateBody(z.object({
+  note: z.string().nullish(),
+})), (req, res) => {
+  res.json(reviewTest(req.testRow.id, req.user, { approve: true, note: req.body.note }));
+});
+
+router.post('/:id/reject', requirePermission('tests:approve'), loadTest, validateBody(z.object({
+  note: z.string().nullish(),
+})), (req, res) => {
+  res.json(reviewTest(req.testRow.id, req.user, { approve: false, note: req.body.note }));
+});
+
+router.post('/:id/publish', requirePermission('tests:write'), loadTest, (req, res) => {
+  assertCanModifyTest(req.user, req.testRow);
+  res.json(publishTest(req.testRow.id, req.user));
+});
+
+/* --------------------------- coverage ------------------------------- */
+
+/**
+ * Did the generated test cover what the sections asked for?
+ * Availability answers "can this be filled"; this answers "is it balanced".
+ */
+router.get('/:id/coverage', requirePermission('tests:read'), loadTest, (req, res) => {
+  if (req.query.axis === 'all') return res.json({ axes: fullCoverage(req.testRow.id) });
+  res.json(testCoverage(req.testRow.id, req.query.axis || 'difficulty'));
+});
+
+router.get('/:id/coverage/axes', requirePermission('tests:read'), loadTest, (req, res) => {
+  res.json(Object.entries(COVERAGE_AXES).map(([key, value]) => ({ key, label: value.label })));
+});
+
+/** Near-duplicate questions drawn into the same test. */
+router.get('/:id/duplicate-warnings', requirePermission('tests:read'), loadTest, (req, res) => {
+  res.json({
+    threshold: Number(req.query.threshold) || 0.6,
+    pairs: duplicateWarnings(req.testRow.id, { threshold: Number(req.query.threshold) || 0.6 }),
+  });
 });
 
 /* --------------------- question-level editing ---------------------- */

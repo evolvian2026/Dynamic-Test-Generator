@@ -18,6 +18,7 @@ import { getDb, closeDb } from './index.js';
 import { migrate } from './migrate.js';
 import { createRng } from '../core/rng.js';
 import { getTaxonomyIndex, invalidateTaxonomyCache } from '../core/taxonomy.js';
+import { fingerprint } from '../core/similarity.js';
 
 // Difficulty-band tags are added alongside the taxonomy's own vocabulary so
 // tag-based filtering has something coarse to bite on as well.
@@ -147,9 +148,9 @@ export function seed({ count = 5000, seed: seedValue = 'DTG-SEED-V1', fresh = fa
 
   const insertQuestion = db.prepare(
     `INSERT INTO questions (qid, question_type, question_text, difficulty, marks,
-                            expected_seconds, status, answer_text, explanation, metadata)
+                            expected_seconds, status, answer_text, explanation, metadata, text_fingerprint)
      VALUES (@qid, @question_type, @question_text, @difficulty, @marks,
-             @expected_seconds, @status, @answer_text, @explanation, @metadata)`,
+             @expected_seconds, @status, @answer_text, @explanation, @metadata, @text_fingerprint)`,
   );
   const insertOption = db.prepare(
     'INSERT INTO question_options (question_id, position, option_text, is_correct) VALUES (?, ?, ?, ?)',
@@ -176,10 +177,11 @@ export function seed({ count = 5000, seed: seedValue = 'DTG-SEED-V1', fresh = fa
       // The narrowest label describing the question, used in the generated text.
       const focus = primary.subAreaName || primary.areaName;
 
+      const text = buildQuestionText(rng, type, primary.areaName, focus, difficulty, n);
       const info = insertQuestion.run({
         qid,
         question_type: type,
-        question_text: buildQuestionText(rng, type, primary.areaName, focus, difficulty, n),
+        question_text: text,
         difficulty,
         marks: marksFor(rng, type, difficulty),
         expected_seconds: secondsFor(type, difficulty),
@@ -190,6 +192,7 @@ export function seed({ count = 5000, seed: seedValue = 'DTG-SEED-V1', fresh = fa
             : null,
         explanation: `The ${focus.toLowerCase()} approach is preferred here because it avoids re-scanning the input.`,
         metadata: JSON.stringify({ generated: true, seedBatch: seedValue }),
+        text_fingerprint: fingerprint(text),
       });
       const questionId = info.lastInsertRowid;
 
